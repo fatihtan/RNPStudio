@@ -1,0 +1,161 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.Customer.CustomerModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+}
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateCustomerProfileAjax", "Customer",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin =   "Customer.UpdateCustomerProfileAjaxBegin",
+            OnSuccess = "Customer.UpdateCustomerProfileAjaxSuccess",
+            OnFailure = "Customer.UpdateCustomerProfileAjaxFailure"
+        },
+        new { id = "form-profile-info" }))
+        {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.Customer.ID">
+
+            <div class="form-group form-md-radios form-md-line-input">
+                <label>Cinsiyet</label>
+                <div class="md-radio-inline">
+                    <div class="md-radio">
+                        <input type="radio" id="gender_male" name="gender" class="md-radiobtn" 
+                        value="true" 
+                        @(Model.CustomerProfile.Gender.HasValue && Model.CustomerProfile.Gender.Value ? "checked=\"checked\"" : "") />
+                        <label for="gender_male">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Erkek
+                        </label>
+                    </div>
+                    <div class="md-radio">
+                        <input type="radio" id="gender_female" name="gender" class="md-radiobtn" 
+                        value="false"
+                        @(Model.CustomerProfile.Gender.HasValue && !Model.CustomerProfile.Gender.Value ? "checked=\"checked\"" : "") />
+                        <label for="gender_female">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Kadın
+                        </label>
+                    </div>
+                    <div class="md-radio">
+                        <input type="radio" id="gender_null" name="gender" class="md-radiobtn" 
+                        value="null"
+                        @(!Model.CustomerProfile.Gender.HasValue ? "checked=\"checked\"" : "") />
+                        <label for="gender_null">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Belirtilmedi
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input ">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="birthdate"
+                    name="BirthdateStr" 
+                    autocomplete="off"
+                    value="@(Model.CustomerProfile.Birthdate.HasValue ? Model.CustomerProfile.Birthdate.Value.ToString("dd.MM.yyyy") : "")" />
+                <label for="birthdate">Doğum Tarihi</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">Bulunduğu Şehir</span>
+                <select class="select2 form-control"
+                    id="city_id"
+                    name="CityID">
+                    <option></option>
+
+                    @foreach (var item in Model.CityList)
+                    {
+                        <option 
+                            @(item.ID == Model.CustomerProfile.CityID ? "selected=\"selected\"" : "")
+                            value="@item.ID">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">İş Ünvanı</span>
+                <select class="select2 form-control"
+                    id="tk_job_title"
+                    name="TKJobTitle">
+                    <option></option>
+
+                    @foreach (var item in Model.TKJobTitleList)
+                    {
+                        <option 
+                            @(item.Value == (int)Model.CustomerProfile.TKJobTitle ?
+                            "selected=\"selected\"" : "")
+                            value="@item.Value">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label
+                @(Model.CustomerProfile.TKJobTitle != TK.TKJobTitle.Other ? "hidden" : "")"
+                id="div_other_job_title">
+                <input type="text" class="form-control" 
+                    id="other_job_title"
+                    name="OtherJobTitle" 
+                    value="@Model.CustomerProfile.OtherJobTitle" />
+                <label for="other_job_title">Diğer İş Ünvanı</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input type="text" class="form-control" 
+                    id="company_title"
+                    name="CompanyTitle" 
+                    value="@Model.CustomerProfile.CompanyTitle">
+                <label for="company_title">Çalıştığı Şirket</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">Şirketin Endüstrisi</span>
+                <select class="select2 form-control"
+                    id="tk_industry"
+                    name="TKIndustry">
+                    <option></option>
+
+                    @foreach (var item in Model.TKIndustryList)
+                    {
+                        <option 
+                            @(item.Value == (int)Model.CustomerProfile.TKIndustry ?
+                            "selected=\"selected\"" : "")
+                            value="@item.Value">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label
+                @(Model.CustomerProfile.TKIndustry != TK.TKIndustry.Other ? "hidden" : "")"
+                id="div_other_industry">
+                <input type="text" class="form-control" 
+                    id="other_industry"
+                    name="OtherIndustry" value="@Model.CustomerProfile.OtherIndustry" />
+                <label for="other_industry">Diğer İş Ünvanı</label>
+            </div>
+
+        </div>
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+    }
+</div>
+
+<input type="hidden" id="OtherTKJobTitle" value="@((int)TK.TKJobTitle.Other)" />
+<input type="hidden" id="OtherTKIndustry" value="@((int)TK.TKIndustry.Other)" />

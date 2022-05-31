@@ -1,0 +1,567 @@
+﻿@using Sky.Common.Extensions
+@using Sky.Common.DTO
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleParticipantModel
+
+@{
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+    
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatilimAktivasyonu))
+        {
+            <div class="portlet green box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-bolt"></i>Aktivasyon
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-activation');">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantActivationAjax", "Raffle",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "Raffle.UpdateRaffleParticipantActivationAjaxBegin",
+                            OnSuccess = "Raffle.UpdateRaffleParticipantActivationAjaxSuccess",
+                            OnFailure = "Raffle.UpdateRaffleParticipantActivationAjaxFailure"
+                        },
+                        new { id = "form-update-raffle-participant-activation" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Görünür</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsShown", Model.RaffleParticipant.IsShown,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Evet&nbsp;",
+                                            data_off_text = "&nbsp;Hayır&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Durum</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsActive", Model.RaffleParticipant.IsActive,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Aktif&nbsp;",
+                                            data_off_text = "&nbsp;Pasif&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Silindi</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsDeleted", !Model.RaffleParticipant.IsDeleted,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Hayır&nbsp;",
+                                            data_off_text = "&nbsp;Evet&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.IslemOnayi))
+        {
+            <div class="portlet blue box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-check"></i>İşlem Onayı
+                    </div>
+                    @if (!Model.RaffleParticipant.IsConfirmed)
+                    {
+                        <div class="actions raffle-participant-confirmed-false">
+                            <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-confirmation')">
+                                <i class="fa fa-check"></i>Onayla</button>
+                        </div>
+                    }
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantConfirmationAjax", "Raffle",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "Raffle.UpdateRaffleParticipantConfirmationAjaxBegin",
+                            OnSuccess = "Raffle.UpdateRaffleParticipantConfirmationAjaxSuccess",
+                            OnFailure = "Raffle.UpdateRaffleParticipantConfirmationAjaxFailure"
+                        },
+                        new { id = "form-update-raffle-participant-confirmation" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID">
+
+                                @if (!Model.RaffleParticipant.IsConfirmed)
+                                {
+                                    <div class="raffle-participant-confirmed-false">
+                                        <p>İşlem onayı vermeniz durumunda bilgiler aşağıdaki gibi otomatik olarak güncellenecek ve bu kayıt çekilişe dahil edilecektir.</p>
+
+                                        <table class="table table-hover">
+                                            <tr>
+                                                <th>Görünür</th>
+                                                <td>Evet</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Durum</th>
+                                                <td>Aktif</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Silindi</th>
+                                                <td>Hayır</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Katılım Durumu</th>
+                                                <td>@(TypeService.GetNameByValue(TK.TKRaffleParticipationStatus.JoinedToRaffle))</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Liste Kodu</th>
+                                                <td>Otomatik Oluşturma İşlemi Uygulanır</td>
+                                            </tr>
+                                        </table>
+
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <label class="control-label label-switch col-md-3">İşlem Onayı</label>
+                                            <div class="col-md-2">
+                                                @Html.CheckBox("IsConfirmed", Model.RaffleParticipant.IsConfirmed,
+                                                new
+                                                {
+                                                    @class = "make-switch",
+                                                    data_on_text = "&nbsp;Evet&nbsp;",
+                                                    data_off_text = "&nbsp;Hayır&nbsp;",
+                                                })
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    <p class="raffle-participant-confirmed-true margin-bottom-zero hidden">
+                                        <strong class="raffle-participant-confirmed-at"></strong>
+                                        tarih ve saatinde onay verilmiştir.
+                                    </p>
+                                }
+                                else if (Model.RaffleParticipant.ConfirmedAt.HasValue)
+                                {
+                                    <p class="raffle-participant-confirmed-true margin-bottom-zero">
+                                        <strong class="raffle-participant-confirmed-at">@Model.RaffleParticipant.ConfirmedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)</strong>
+                                        tarih ve saatinde işlem onayı verilmiştir.
+                                    </p>
+                                }
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KatilimTuruveKatilimDurumuGuncelleme))
+        {
+            <div class="portlet blue-hoki box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-toggle-off"></i>Katılım Türü & Katılım Durumu
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-type-and-status')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantTypeAndStatusAjax", "Raffle",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "Raffle.UpdateRaffleParticipantTypeAndStatusAjaxBegin",
+                            OnSuccess = "Raffle.UpdateRaffleParticipantTypeAndStatusAjaxSuccess",
+                            OnFailure = "Raffle.UpdateRaffleParticipantTypeAndStatusAjaxFailure"
+                        },
+                        new { id = "form-update-raffle-participant-type-and-status" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                    <span class="text-gray">Katılım Türü</span>
+                                    <select class="select2 form-control"
+                                        id="tk_raffle_participant_type"
+                                        name="TKRaffleParticipationType"
+                                        required="required">
+
+                                        <option></option>
+
+                                        @foreach (var item in Model.TKRaffleParticipationTypeList)
+                                        {
+                                            <option 
+                                                @(item.Value == (int)Model.RaffleParticipant.TKRaffleParticipationType ? "selected" : "") 
+                                                value="@item.Value">@item.Name</option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                    <span class="text-gray">Katılım Durumu</span>
+                                    <select class="select2 form-control"
+                                        id="tk_raffle_participant_status"
+                                        name="TKRaffleParticipationStatus"
+                                        required="required">
+
+                                        <option></option>
+
+                                        @foreach (var item in Model.TKRaffleParticipationStatusList)
+                                        {
+                                            <option 
+                                                @(item.Value == (int)Model.RaffleParticipant.TKRaffleParticipationStatus ? "selected" : "") 
+                                                value="@item.Value">@item.Name</option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="portlet dark box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-send"></i>Email & Sms Gönder
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="form">
+                    <p>İşlem onayından sonra müşteriye 
+                        <strong>"@Model.RaffleParticipant.ID.ToString("00000") Numaralı Çekiliş Katılımınız Başarıyla Onaylandı"</strong> 
+                        konulu Email veya SMS göndermek için aşağıdaki butonları kullanabilirsiniz.</p>
+                    <a class="btn green btn-outline" href="#send-email-raffle-participant-confirmed-modal" data-toggle="modal"><i class="fa fa-envelope"></i>&nbsp;Email Gönder</a>
+                    <a class="btn green btn-outline" href="#send-sms-raffle-participant-confirmed-modal" data-toggle="modal"><i class="icon-envelope"></i>&nbsp;Sms Gönder</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ListeKoduOlustur))
+{
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <div class="portlet green-meadow box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-refresh"></i>Liste Kodu Oluştur (Auto)
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-list-number-auto')">
+                            <i class="fa fa-refresh"></i>Oluştur</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantListNumberAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleParticipantListNumberAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleParticipantListNumberAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleParticipantListNumberAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-participant-list-number-auto" }))
+                        {
+                            <div class="form-body">
+
+                                <p>Liste kodu otomatik olarak oluşturulur.</p>
+
+                                <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID">
+                                <input type="hidden" name="AutoGenerate" value="true" />
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <input 
+                                            type="text" 
+                                            class="form-control raffle-participant-listnumber" 
+                                            id="listnumber_auto"
+                                            value="@Model.RaffleParticipant.ListNumber" 
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                            <label for="listnumber_auto">Liste Numarası</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <input 
+                                            type="text" 
+                                            class="form-control raffle-participant-listsequence" 
+                                            id="listsequence_auto"
+                                            value="@Model.RaffleParticipant.ListSequence" 
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                            <label for="listsequence_auto">Liste Sırası</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-12">
+            <div class="portlet green-meadow box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-refresh"></i>Liste Kodu Oluştur (Manuel)
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-list-number')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantListNumberAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleParticipantListNumberAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleParticipantListNumberAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleParticipantListNumberAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-participant-list-number" }))
+                        {
+                            <div class="form-body">
+
+                                <p>Liste kodunu sıfırlamak için Liste Numarasına 0 (sıfır) yazınız.</p>
+
+                                <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID">
+                                <input type="hidden" name="AutoGenerate" value="false" />
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <input 
+                                            type="text" 
+                                            class="form-control raffle-participant-listnumber" 
+                                            autocomplete="off"
+                                            id="listnumber"
+                                            name="ListNumber" 
+                                            value="@Model.RaffleParticipant.ListNumber" 
+                                            required="required" />
+                                            <label for="listnumber">Liste Numarası</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <input 
+                                            type="text" 
+                                            class="form-control raffle-participant-listsequence" 
+                                            autocomplete="off"
+                                            id="listsequence"
+                                            name="ListSequence" 
+                                            value="@Model.RaffleParticipant.ListSequence" 
+                                            required="required" />
+                                            <label for="listsequence">Liste Sırası</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="send-email-raffle-participant-confirmed-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">@Model.RaffleParticipant.ID.ToString("00000") Numaralı Çekiliş Katılımınız Başarıyla Onaylandı</h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendEmailRaffleParticipantConfirmedAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "Raffle.SendEmailRaffleParticipantConfirmedAjaxBegin",
+                OnSuccess = "Raffle.SendEmailRaffleParticipantConfirmedAjaxSuccess",
+                OnFailure = "Raffle.SendEmailRaffleParticipantConfirmedAjaxFailure"
+            }, new {
+                id = "form-send-email-raffle-participant-confirmed"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="RaffleParticipantID" id="sendemail_raffleparticipant_id" value="@Model.RaffleParticipant.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendemail_raffleparticipant_fullname"
+                            value="@(string.Format("{0} {1}", Model.Customer.FirstName, Model.Customer.LastName))"
+                            autocomplete="off"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendemail_raffleparticipant_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="Email"
+                            id="sendemail_raffleparticipant_email"
+                            value="@Model.Customer.Email"
+                            autocomplete="off"
+                            required="required"
+                            maxlength="50" />
+                        <label for="sendemail_raffleparticipant_email">Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <label class="control-label col-md-2 label-switch">BCC Kullan</label>
+                        <div class="mt-radio-inline">
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="true" checked="checked" />
+                                Evet
+                            <span></span>
+                            </label>
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="false" />
+                                Hayır
+                            <span></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-md-line-input " id="div-send-email-raffleparticipant-bcc-email">
+                        <input type="text"
+                            class="form-control"
+                            name="BCCEmail"
+                            id="sendemail_raffleparticipant_bccemail"
+                            autocomplete="off"
+                            required="required"
+                            value="@ContactEmail"
+                            maxlength="50" />
+                        <label for="sendemail_raffleparticipant_bccemail">BCC Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="send-sms-raffle-participant-confirmed-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">@Model.RaffleParticipant.ID.ToString("00000") Numaralı Çekiliş Katılımınız Başarıyla Onaylandı</h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendSmsRaffleParticipantConfirmedAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "Raffle.SendSmsRaffleParticipantConfirmedAjaxBegin",
+                OnSuccess = "Raffle.SendSmsRaffleParticipantConfirmedAjaxSuccess",
+                OnFailure = "Raffle.SendSmsRaffleParticipantConfirmedAjaxFailure"
+            }, new {
+                id = "form-send-sms-raffle-participant-confirmed"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="RaffleParticipantID" id="sendsms_raffleparticipant_id" value="@Model.RaffleParticipant.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendsms_raffleparticipant_fullname"
+                            value="@(string.Format("{0} {1}", Model.Customer.FirstName, Model.Customer.LastName))"
+                            autocomplete="off"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendsms_raffleparticipant_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control input-phone-number"
+                            data-country-code="@Model.Customer.CountryPhoneCode"
+                            data-phone-number="@Model.Customer.PhoneNumber"
+                            name="PhoneNumber"
+                            id="sendsms_raffleparticipant_phonenumber"
+                            value="@Model.Customer.GetFullPhoneNumber()"
+                            autocomplete="off"
+                            required="required" />
+                        <label for="sendsms_raffleparticipant_phonenumber">Alıcı Telefon Numarası</label>
+                        <span class="help-block"></span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

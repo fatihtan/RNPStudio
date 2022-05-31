@@ -1,0 +1,349 @@
+﻿@using Sky.Common.DTO
+@using Sky.Common.Extensions
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleParticipantListModel
+
+@{
+    ViewBag.Title = "Çekiliş Katılımları";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Anasayfa">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Çekiliş Katılımları</span>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="page-title"></h3>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-random font-green-turquoise"></i>
+                        <span class="caption-subject font-green-turquoise bold uppercase">Çekiliş Katılımları
+                            <small>(@(string.Format("{0} Katılım Listeleniyor", Model.RaffleParticipantList.Count)))</small>
+                        </span>
+                    </div>
+
+                    <div class="pull-right margin-left-20">
+                        <form method="get">
+                            <input type="hidden" name="TKRaffleParticipationStatus" value="@Model.SelectedTKRaffleParticipationStatus" />
+                            <input type="hidden" name="TKRaffleParticipationType" value="@Model.SelectedTKRaffleParticipationType" />
+
+                            <input 
+                                type="text" 
+                                name="Limit" 
+                                id="limit"
+                                required="required" 
+                                value="@Model.Limit"
+                                autocomplete="off" 
+                                placeholder="Limit" 
+                                class="form-control input-inline">
+
+                            <button type="submit" class="btn btn-outline green"><i class="fa fa-search"></i></button>
+                        </form>
+                    </div>
+
+                    <div class="pull-right margin-left-20">
+                        <div class="form-group" style="width: 250px;">
+                            <select class="select2 form-control"
+                                id="tk_raffle_participation_type">
+
+                                <option></option>
+
+                                @foreach (var item in Model.TKRaffleParticipationTypeList)
+                                {
+                                    <option 
+                                        @(item.Value == Model.SelectedTKRaffleParticipationType ? "selected" : "")
+                                        value="@item.Value">@item.Name</option>
+                                }
+
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pull-right">
+                        <div class="form-group" style="width: 250px;">
+                            <select class="select2 form-control"
+                                id="tk_raffle_participant_status">
+
+                                <option></option>
+
+                                @foreach (var item in Model.TKRaffleParticipationStatusList)
+                                {
+                                    <option 
+                                        @(item.Value == Model.SelectedTKRaffleParticipationStatus ? "selected" : "")
+                                        value="@item.Value">@item.Name</option>
+                                }
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    <table class="table table-striped table-bordered table-hover dt-responsive" id="table_raffle_participant_list">
+                        <thead>
+                            <tr>
+                                <th class="all">Katılım No</th>
+                                <th class="all">Ç. No</th>
+                                <th class="all">Hesap Adı</th>
+                                <th class="all">Liste Kodu</th>
+                                <th class="all">Katılım Türü</th>
+                                <th class="all">Katılım Durumu</th>
+                                <th class="all">Hedef</th>
+                                <th class="all">Başlangıç</th>
+                                <th class="all">Bitiş</th>
+                                <th class="all text-center">Onaylı</th>
+                                <th class="all text-center">Durum</th>
+                                <th class="all text-center">Tarih</th>
+                                <th class="all"></th>
+
+                                <th class="none">Onay Tarihi</th>
+                                <th class="none">Başlangıç Ekran Görüntüsü</th>
+                                <th class="none">Bitiş Ekran Görüntüsü</th>
+                                <th class="none">&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RaffleParticipantList)
+                            {
+                                <tr id="object_@item.ID" class="object-item" data-id="@item.ID">
+                                    <td>@item.ID.ToString("00000")</td>
+                                    <td>@item.RaffleID.ToString("00000")</td>
+                                    <td class="absolute-td">
+                                        @item.SocialMediaAccount.AccountName
+                                        <span class="absolute-td-social"><i class="fa fa-@(item.SocialMediaAccount.TKSocialMediaPlatform.ToString().ToLower(EnglishCultureInfo))"></i></span>
+                                    </td>
+                                    <td>@item.GetListCode()</td>
+                                    <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationType))</td>
+                                    <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationStatus))</td>
+                                    <td>@item.TargetFollowerCount</td>
+                                    <td>@item.InitialFollowerCount</td>
+                                    <td>@item.EventualFollowerCount</td>
+
+                                    <td class="text-center">
+                                        <span class="label label-sm label-@(item.IsConfirmed ? "success" : "warning")">
+                                            @(item.IsConfirmed ? "EVET" : "HAYIR")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                                            @(item.IsActive ? "AKTİF" : "PASİF")
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                                    <td class="text-center">
+                                        <a class="btn btn-xs text-proper raffle-participant-confirm @(item.IsConfirmed ? "disabled" : "")">Onayla</a>
+                                    </td>
+
+                                    <td>@(item.ConfirmedAt.HasValue ? item.ConfirmedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.InitialScreenShot))
+                                        {
+                                            <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.InitialScreenShot))" />
+                                        }
+                                        else
+                                        {
+                                            <span>Girilmedi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.EventualScreenShot))
+                                        {
+                                            <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.EventualScreenShot))" />
+                                        }
+                                        else
+                                        {
+                                            <span>Girilmedi</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <a href="/Raffle/ParticipantDetail/@item.ID" class="btn btn-sm btn-default text-proper">
+                                            <i class="fa fa-edit"></i>&nbsp;GÖRÜNTÜLE</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ListeUzerindeOdemeOnayi))
+{
+    <div class="modal fade" id="raffle-participant-confirmation-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+
+                @using (Ajax.BeginForm("UpdateRaffleParticipantConfirmationAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin = "Raffle.UpdateRaffleParticipantConfirmationAjaxBegin",
+                OnSuccess = "Raffle.UpdateRaffleParticipantConfirmationAjaxSuccess",
+                OnFailure = "Raffle.UpdateRaffleParticipantConfirmationAjaxFailure"
+            },
+            new { id = "form-update-raffle-participant-confirmation" }))
+                {
+                    <div class="modal-body">
+
+                        <input type="hidden" name="ID" id="raffle_participant_id" />
+                        <input type="hidden" name="FromRaffleParticipantList" value="true" />
+
+                        <div class="raffle-participant-confirmed-false">
+                            <p>İşlem onayı vermeniz durumunda bilgiler aşağıdaki gibi otomatik olarak güncellenecek ve bu kayıt çekilişe dahil edilecektir.</p>
+
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Görünür</th>
+                                    <td>Evet</td>
+                                </tr>
+                                <tr>
+                                    <th>Durum</th>
+                                    <td>Aktif</td>
+                                </tr>
+                                <tr>
+                                    <th>Silindi</th>
+                                    <td>Hayır</td>
+                                </tr>
+                                <tr>
+                                    <th>Katılım Durumu</th>
+                                    <td>@(TypeService.GetNameByValue(TK.TKRaffleParticipationStatus.JoinedToRaffle))</td>
+                                </tr>
+                                <tr>
+                                    <th>Liste Kodu</th>
+                                    <td>Otomatik Oluşturma İşlemi Uygulanır</td>
+                                </tr>
+                            </table>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label label-switch col-md-3">İşlem Onayı</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsConfirmed", false,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "IsConfirmed",
+                                    data_on_text = "&nbsp;Evet&nbsp;",
+                                    data_off_text = "&nbsp;Hayır&nbsp;",
+                                })
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                        <button type="submit" class="btn green">ONAYLA</button>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/raffle.ajax.js?v=1"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#tk_raffle_participation_type, #tk_raffle_participant_status").select2({
+                placeholder: "Seçiniz",
+                width: null
+            });
+
+            datatableGenerator.responsive('#table_raffle_participant_list', 0, 'desc');
+
+            $("#limit").inputmask({
+                mask: '9',
+                repeat: 12,
+                greedy: !1
+            });
+        });
+
+
+        $('#tk_raffle_participation_type, #tk_raffle_participant_status').on('change', function () {
+            filterTable()
+        });
+
+        function filterTable() {
+
+            var statusID = $('#tk_raffle_participant_status').val();
+            var typeID = $('#tk_raffle_participation_type').val();
+            var limit = $('#limit').val();
+
+            statusID = 'TKRaffleParticipationStatus=' + statusID;
+            typeID = 'TKRaffleParticipationType=' + typeID;
+            limit = 'Limit=' + limit;
+
+            window.location.href = '/Raffle/ParticipantList?' + statusID + '&' + typeID + '&' + limit;
+        }
+    </script>
+
+    <script>
+        $('.raffle-participant-confirm').on('click', function () {
+            var id = $(this).closest('.object-item').data('id');
+
+            if (id == '') {
+                toastr.warning('Seçilen çekiliş katılımı için onay verilemiyor. Sayfayı yenileyip yeniden deneyiniz.');
+                return;
+            }
+
+            $('#raffle_participant_id').val(id);
+            $('#raffle-participant-confirmation-modal').modal('show');
+        });
+
+        $("#raffle-participant-confirmation-modal").on("hidden.bs.modal", function () {
+            $('#raffle_participant_id').val('');
+            $('#IsConfirmed').attr('checked', false).change();
+        });
+    </script>
+}

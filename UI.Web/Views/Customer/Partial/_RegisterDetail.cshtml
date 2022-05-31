@@ -1,0 +1,46 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.Customer.CustomerModel
+
+@{
+    IFormatProvider TurkishCulture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="table-scrollable">
+            <table class="table table-hover">
+                <tr>
+                    <th>Oluşturan Kullanıcı</th>
+                    <td>
+                        <a target="_blank" href="/User/Detail/@Model.CreatorUser.ID">@(string.Format("{0} {1}", Model.CreatorUser.FirstName, Model.CreatorUser.LastName))</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>IP Adres</th>
+                    <td>@Model.Customer.IPAddress</td>
+                </tr>
+                <tr>
+                    <th>Kayıt Tarihi</th>
+                    <td>@Model.Customer.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCulture)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="table-scrollable">
+            <table class="table table-hover">
+                <tr>
+                    <th>Browser Detail</th>
+                    <td>
+                        <div class="description-field margin-zero padding-zero">@Model.CustomerRegisterDetail.BrowserDetail</div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Ek Bilgi</th>
+                    <td>@Model.CustomerRegisterDetail.AdditionalInfo</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,242 @@
+﻿@using Sky.CMS.Services
+
+@model UI.Web.Models.User.UserBalanceModel
+
+@{
+    string PageTitle = string.Format("{0} Numaralı İşlem", Model.UserBalance.ID);
+
+    ViewBag.Title = PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+}
+
+<!-- BEGIN CONTENT BODY -->
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <!-- BEGIN PAGE BAR -->
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/User/List">Kullanıcılar</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <strong><a href="/User/Detail/@Model.User.ID">@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)</a></strong>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/User/Detail/@Model.User.ID#user_balance">Bakiye</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>@PageTitle</span>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE BAR -->
+    <!-- BEGIN PAGE TITLE-->
+    <h3 class="page-title"></h3>
+    <!-- END PAGE TITLE-->
+    <!-- END PAGE HEADER-->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN EXAMPLE TABLE PORTLET-->
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-wallet font-green"></i>
+                        <span class="caption-subject bold uppercase">@PageTitle</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    @using (Ajax.BeginForm("BalanceUpdateAjax", "User",
+                    new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "User.BalanceUpdateAjaxBegin",
+                        OnSuccess = "User.BalanceUpdateAjaxSuccess",
+                        OnFailure = "User.BalanceUpdateAjaxFailure"
+                    },
+                    new { id = "form-update-user-balance" }))
+                    {
+                        <div class="form-body">
+
+                            <input type="hidden" name="ID" value="@Model.UserBalance.ID" />
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@TypeService.GetNameByValue(Model.UserBalance.TKBalanceAction)"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>İşlem Türü</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@Model.UserBalance.IPAddress"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>IP Adres</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@Model.UserBalance.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>İşlem Tarihi</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@Model.UserBalance.PreviousBalance.ToString("0.00")"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>Önceki Bakiye (TL)</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@Model.UserBalance.Amount.ToString("0.00")"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>İşlem Tutarı (TL)</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group form-md-line-input form-md-floating-label">
+                                        <input
+                                            type="text" class="form-control"
+                                            autocomplete="off"
+                                            value="@Model.UserBalance.CurrentBalance.ToString("0.00")"
+                                            disabled="disabled"
+                                            readonly="readonly" />
+                                        <label>Mevcut Bakiye (TL)</label>
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <textarea class="form-control"
+                                    name="Description"
+                                    rows="3"
+                                    id="description"
+                                    maxlength="500"
+                                    required="required">@Model.UserBalance.Description</textarea>
+                                <label for="description">Açıklama</label>
+                                <span class="help-block"></span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <textarea class="form-control"
+                                    name="ShownDescription"
+                                    rows="3"
+                                    id="shown_description"
+                                    maxlength="500"
+                                    required="required">@Model.UserBalance.ShownDescription</textarea>
+                                <label for="shown_description">Görünen Açıklama</label>
+                                <span class="help-block"></span>
+                            </div>
+
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Görünür</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsShown", Model.UserBalance.IsShown,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_active",
+                                        data_on_text = "&nbsp;Evet&nbsp;",
+                                        data_off_text = "&nbsp;Hayır&nbsp;"
+                                    })
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Durum</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsActive", Model.UserBalance.IsActive,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_active",
+                                        data_on_text = "&nbsp;Aktif&nbsp;",
+                                        data_off_text = "&nbsp;Pasif&nbsp;"
+                                    })
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Silindi</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsDeleted", !Model.UserBalance.IsDeleted,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_deleted",
+                                        data_on_text = "&nbsp;Hayır&nbsp;",
+                                        data_off_text = "&nbsp;Evet&nbsp;"
+                                    })
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="form-actions noborder">
+                            <div class="col-md-3">
+                                <button type="submit" id="submit" class="btn btn-block blue">GÜNCELLE</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/user.ajax.js"></script>
+}

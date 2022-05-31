@@ -1,0 +1,100 @@
+﻿@using Sky.CMS.Services
+
+@model UI.Web.Models.Raffle.RaffleListModel
+
+@{
+    ViewBag.Title = Model.PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section topCSS{
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Çekiliş İşlemleri</span>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>@Model.PageTitle</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green-turquoise">
+                        <i class="fa fa-sitemap font-green-turquoise"></i>
+                        <span class="caption-subject bold uppercase">@Model.PageTitle</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    <table class="table table-striped table-bordered table-hover table-checkable order-column" id="item_list">
+                        <thead>
+                            <tr>
+                                <th class="hidden"></th>
+                                <th class="col-md-1">Çekiliş<br />No</th>
+                                <th>Çekiliş<br />Paketi</th>
+                                <th>Başlangıç<br />Tarihi</th>
+                                <th>Bitiş<br />Tarihi</th>
+                                <th>Ortalama<br />Takipçi</th>
+                                <th>Liste<br />Kapasitesi</th>
+                                <th>Çekiliş<br />Durumu</th>
+                                <th class="col-md-1 text-center">Durum</th>
+                                <th class="text-center">Kayıt<br />Tarihi</th>
+                                <th class="col-md-1">&nbsp;</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.RaffleList)
+                            {
+                                <tr class="odd gradeX object-item">
+                                    <td class="hidden">&nbsp;</td>
+                                    <td>@item.ID.ToString("00000")</td>
+                                    <td>@item.RaffleTemplate.Name</td>
+                                    <td>@item.RaffleStartedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                                    <td>@(item.RaffleEndedAt.HasValue ? item.RaffleEndedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+                                    <td>@item.AverageFollowerCount</td>
+                                    <td>@item.UserCountPerList</td>
+                                    <td>@(TypeService.GetNameByValue(item.TKRaffleStatus))</td>
+                                    <td class="text-center">
+                                        <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                                            @(item.IsActive ? "AKTİF" : "PASİF")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                                    <td class="text-center">
+                                        <a href="/Raffle/Detail/@item.ID" class="btn btn-xs"><i class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+    <script>
+        $(document).ready(function () {
+            datatableGenerator.normal('#item_list', 1);
+        });
+    </script>
+}

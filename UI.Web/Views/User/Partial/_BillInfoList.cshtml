@@ -1,0 +1,85 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+<div class="pull-right margin-bottom-10">
+    <a class="btn green text-proper" href="/User/BillInfoSave/@Model.User.ID"><i class="fa fa-plus"></i>&nbsp;Yeni Ekle</a>
+</div>
+
+<table
+    class="table table-striped table-bordered table-hover table-checkable order-column"
+    id="table_bill_info_list">
+    <thead>
+        <tr>
+            <th class="hidden">&nbsp;</th>
+            <th class="text-center">Fatura Türü</th>
+            <th>Fatura Başlığı</th>
+            <th>TCKN/VKN</th>
+            <th>Vergi Dairesi</th>
+            <th class="text-center">Görünür</th>
+            <th class="text-center">Durum</th>
+            <th class="text-center">Silindi</th>
+            <th class="text-center">Tarih</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.UserBillInfoList)
+        {
+            <tr class="odd gradeX">
+                <td class="hidden">&nbsp;</td>
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsCorporate ? "info" : "warning")">
+                        @(item.IsCorporate ? "KURUMSAL" : "BİREYSEL")
+                    </span>
+                </td>
+                <td>
+                    @if (item.IsCorporate)
+                    {
+                        <span>@item.CompanyTitle</span>
+                    }
+                    else
+                    {
+                        <span>@item.FullName</span>
+                    }
+                </td>
+                <td>
+                    @if (item.IsCorporate)
+                    {
+                        <span>@item.TaxNo</span>
+                    }
+                    else
+                    {
+                        <span>@item.CitizenIdentityNo</span>
+                    }
+                </td>
+                <td>@item.TaxOffice</td>
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsShown ? "info" : "warning")">
+                        @(item.IsShown ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsActive ? "success" : "warning")">
+                        @(item.IsActive ? "AKTİF" : "PASİF")
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsDeleted ? "danger" : "info")">
+                        @(item.IsDeleted ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                <td class="text-center">
+                    <a href="/User/BillInfoUpdate/@item.ID" 
+                        class="btn btn-sm text-proper">Git</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

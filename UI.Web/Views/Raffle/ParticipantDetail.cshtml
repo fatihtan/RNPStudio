@@ -1,0 +1,120 @@
+﻿@using Sky.Common.DTO
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleParticipantModel
+
+@{
+    string PageTitle = string.Format("{0} Numaralı Çekiliş Katılımı", Model.RaffleParticipant.ID.ToString("00000"));
+    ViewBag.Title = PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <link href="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-form/jquery.form.js" type="text/javascript"></script>
+
+    <script src="/assets/global/plugins/phone-number/phone.number.mask.js"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/Raffle/ParticipantList">Çekiliş Katılımları</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>@PageTitle</span>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="page-title"></h3>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title tabbable-line">
+                    <ul class="nav nav-tabs nav-tabs-lg">
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatilimBilgileri))
+                        {
+                            <li>
+                                <a href="#raffleparticipant_detail" data-toggle="tab">Çekiliş Katılım Bilgileri</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatiliminiDuzenleme))
+                        {
+                            <li>
+                                <a href="#raffleparticipant_update" data-toggle="tab">Düzenle</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.TelafiTanimlamaSekmesiniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#define_makeup" data-toggle="tab">Telafi Tanımla</a>
+                            </li>
+                        }
+
+                    </ul>
+                </div>
+                <div class="portlet-body">
+                    <div class="tab-content">
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatilimBilgileri))
+                        {
+                            <div class="tab-pane" id="raffleparticipant_detail">
+                                @Html.Partial("Partial/_RaffleParticipantDetail")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatiliminiDuzenleme))
+                        {
+                            <div class="tab-pane" id="raffleparticipant_update">
+                                @Html.Partial("Partial/_RaffleParticipantUpdate")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.TelafiTanimlamaSekmesiniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="define_makeup">
+                                @Html.Partial("Partial/_DefineMakeup")
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="@Model.Customer.ID" id="CustomerID" />
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/raffle.ajax.js?v=2"></script>
+    <script src="/assets/content/js/raffle.participant.detail.js?v=1"></script>
+}

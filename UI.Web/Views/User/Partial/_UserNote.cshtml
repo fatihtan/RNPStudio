@@ -1,0 +1,49 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+<div class="modal fade" id="add-note-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Yeni Not Ekle</h4>
+            </div>
+
+            @using (Ajax.BeginForm("NoteSaveAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.NoteSaveAjaxBegin",
+                OnSuccess = "User.NoteSaveAjaxSuccess",
+                OnFailure = "User.NoteSaveAjaxFailure"
+            }, new
+            {
+                id = "form-save-user-note"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="UserID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <textarea
+                            class="form-control"
+                            name="NoteContent"
+                            id="note_content"
+                            maxlength="2000"
+                            rows="10"></textarea>
+                        <label for="note_content">Not</label>
+                        <span class="help-block">Maksimum 2000 karakter</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">KAYDET</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

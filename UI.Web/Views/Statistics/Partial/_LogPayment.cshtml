@@ -1,0 +1,69 @@
+﻿@using Sky.Log.DTO
+@model UI.Web.Models.Statistics.LogListModel
+@{
+    Layout = null;
+    ViewBag.Title = "Ödeme";
+    List<LogPayment> LogList = ((List<BaseDTO>)Model.LogList).Cast<LogPayment>().ToList();
+    string UserFullName = Model.UserID.HasValue ? string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName) : null;
+}
+
+<table class="table table-striped table-bordered table-hover table-checkable order-column" id="item_list">
+    <thead>
+        <tr>
+            <th class="hidden"></th>
+            <td>ID</td>
+            <th>Kullanıcı</th>
+            <th class="col-md-1 text-center">Sipariş</th>
+            <th>Pos</th>
+            <th class="col-md-1 text-center">Başarılı</th>
+            <th>H.Kodu</th>
+            <th>H.Grubu</th>
+            <th>H.Mesajı</th>
+            <th class="col-md-1 text-center">IP Adres</th>
+            <th class="col-md-1 text-center">Tarih</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in LogList)
+        {
+            <tr class="odd gradeX object-item" data-id="" id="object_@item.ID">
+                <td class="hidden">&nbsp;</td>
+                <td>@item.ID</td>
+                <td>
+                   @(Model.UserID.HasValue ? UserFullName : item.UserFullName)
+                </td>
+                <td class="text-center">
+                    <a href="/Order/Detail/@item.OrderID">@item.OrderID</a>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-info">
+                        @Sky.CMS.Services.TypeService.GetNameByValue(item.TKPos)
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsSuccess? "success" : "danger")">
+                        @(item.IsSuccess ? "Evet" : "Hayır")
+                    </span>
+                </td>
+                <td>@item.ErrorCode</td>
+                <td>@item.ErrorGroup</td>
+                <td>@item.ErrorMessage</td>
+                <td>@item.IPAddress</td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                <td class="text-center">
+                    <a class="btn btn-xs browse-log" data-id="@item.ID"><i class="fa fa-eye"></i></a>
+                </td>
+            </tr>
+        }
+
+
+    </tbody>
+</table>
+
+<input type="hidden" id="orderNum" value="10" />
+<input type="hidden" id="TableName" value="@Sky.Common.DTO.TK.TKLog.LogPayment.ToString()" />
+<input type="hidden" id="FieldName" value="Description" />
+
+@Html.Partial("/Views/Statistics/Partial/_JSONViewer.cshtml")

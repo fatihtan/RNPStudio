@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Sky.CMS</id>
+    <version>1.0.7</version>
+    <title>Sky.CMS</title>
+    <authors>Dixie7 Software Corporation</authors>
+    <owners>Dixie7 Software Corporation</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Content Management System For All Projects</description>
+    <releaseNotes />
+    <copyright>Copyright 2013 - 2021 Dixie7</copyright>
+    <tags>CMS</tags>
+    <dependencies>
+      <dependency id="Dapper" version="1.50.2" />
+      <dependency id="Sky.Repository" />
+    </dependencies>
+  </metadata>
+</package>

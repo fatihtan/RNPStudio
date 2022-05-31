@@ -1,0 +1,38 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.Customer.CustomerModel
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateCustomerSecuritySettingsAjax", "Customer",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin =   "Customer.UpdateCustomerSecuritySettingsAjaxBegin",
+            OnSuccess = "Customer.UpdateCustomerSecuritySettingsAjaxSuccess",
+            OnFailure = "Customer.UpdateCustomerSecuritySettingsAjaxFailure"
+        },
+        new { id = "form-security-settings" }))
+    {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.Customer.ID">
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="email"
+                    name="Email" 
+                    value="@Model.Customer.Email" 
+                    maxlength="50"
+                    required="required" />
+                <label for="email">Email</label>
+            </div>
+
+        </div>
+        
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+    }
+</div>

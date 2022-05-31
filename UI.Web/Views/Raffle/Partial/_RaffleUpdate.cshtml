@@ -1,0 +1,498 @@
+﻿@using Sky.Common.Extensions
+@using Sky.Common.DTO
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleModel
+
+@{
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+}
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisAktivasyonu))
+        {
+            <div class="portlet green box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-bolt"></i>Aktivasyon
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-activation');">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleActivationAjax", "Raffle",
+                    new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleActivationAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleActivationAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleActivationAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-activation" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Durum</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsActive", Model.Raffle.IsActive,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        data_on_text = "&nbsp;Aktif&nbsp;",
+                                        data_off_text = "&nbsp;Pasif&nbsp;"
+                                    })
+                                    </div>
+                                </div>
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Silindi</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsDeleted", !Model.Raffle.IsDeleted,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        data_on_text = "&nbsp;Hayır&nbsp;",
+                                        data_off_text = "&nbsp;Evet&nbsp;"
+                                    })
+                                    </div>
+                                </div>
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.OrtalamaTakipciHesaplama))
+        {
+            <div class="portlet yellow-crusta box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-sort"></i>Ortalama Takipçi
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-average-follower-count')">
+                            <i class="fa fa-calculator"></i>Hesapla</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleAverageFollowerCountAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleAverageFollowerCountAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleAverageFollowerCountAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleAverageFollowerCountAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-average-follower-count" }))
+                        {
+                            <div class="form-body">
+
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <p>Çekiliş katılımcılarına giden takipçi sayılarının ortalama değeri hesaplanır.</p>
+                                <p>Ortalama Takipçi Hesaplama Kuralı: </p>
+                                <ul>
+                                    <li>Bitiş takipçi sayısı girilmiş olmalı</li>
+                                    <li>İşlem onayı verilmiş olmalı</li>
+                                    <li>Görünür evet olmalı</li>
+                                    <li>Durum aktif olmalı</li>
+                                    <li>Silindi hayır olmalı</li>
+                                </ul>
+                                <p>
+                                    Son Hesaplama Sonucu: 
+                                <strong>
+                                    <span class="raffle-average-follower-count">@(Model.Raffle.AverageFollowerCount.HasValue ? Model.Raffle.AverageFollowerCount.Value.ToString() : "Hesaplanmadı")</span>
+                                </strong>
+                                </p>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+
+
+    <div class="col-md-6 col-sm-12">
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisDurumuGuncelleme))
+        {
+            <div class="portlet blue-hoki box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-plug"></i>Çekiliş Durumu
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-tk-raffle-status')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleStatusAjax", "Raffle",
+                    new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleStatusAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleStatusAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleStatusAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-tk-raffle-status" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label padding-top-zero margin-bottom-zero">
+                                    <span class="text-gray">Çekiliş Durumu</span>
+                                    <select class="select2 form-control"
+                                        id="tk_raffle_status"
+                                        name="TKRaffleStatus">
+                                        <option></option>
+
+                                        @foreach (var item in Model.TKRaffleStatusList)
+                                        {
+                                            <option 
+                                            @(item.Value == (int)Model.Raffle.TKRaffleStatus ? "selected" : "") 
+                                            value="@item.Value">@item.Name</option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.CekilisKatilimcilarinaIslemBildirimiGonderme))
+        {
+            <div class="portlet purple box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-send"></i>Email & Sms Gönder
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        
+                        <table class="table table-hover">
+                           <tr>
+                               <th>İçerik</th>
+                               <th>İletişim Türü</th>
+                           </tr>
+                           <tr>
+                               <td>Çekilişimiz başlamıştır.</td>
+                               <td>
+                                   <a class="btn green btn-outline send-email-raffle-participant" data-tkemailtemplate="@((int)TK.TKEmailTemplate.RaffleStarted)">
+                                       <i class="fa fa-envelope"></i>&nbsp;Email Gönder
+                                   </a>
+                                   <a class="btn green btn-outline send-sms-raffle-participant" data-tksmstemplate="@((int)TK.TKSmsTemplate.RaffleStarted)">
+                                       <i class="icon-envelope"></i>&nbsp;Sms Gönder
+                                   </a>
+                               </td>
+                           </tr>
+                           <tr>
+                               <td>Çekilişimiz sona ermiştir.</td>
+                               <td>
+                                   <a class="btn green btn-outline send-email-raffle-participant" data-tkemailtemplate="@((int)TK.TKEmailTemplate.RaffleEnded)">
+                                       <i class="fa fa-envelope"></i>&nbsp;Email Gönder
+                                   </a>
+                                   <a class="btn green btn-outline send-sms-raffle-participant" data-tksmstemplate="@((int)TK.TKSmsTemplate.RaffleEnded)">
+                                       <i class="icon-envelope"></i>&nbsp;Sms Gönder
+                                   </a>
+                               </td>
+                           </tr>
+                       </table>
+                        
+                        <p><span class="label label-info">Bilgi</span>&nbsp;İşlem onayı verilmiş katılımlara gönderim yapılır.</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.Baslangic_BitisTarihleriniGuncelleme))
+        {
+            <div class="portlet green-meadow box">
+
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-calendar"></i>Başlangıç & Bitiş Tarihleri
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-datetime')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleDateTimeAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleDateTimeAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleDateTimeAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleDateTimeAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-datetime" }))
+                        {
+                            <div class="form-body">
+
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <div class="form-group form-md-line-input">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    autocomplete="off"
+                                    id="raffle_started_at"
+                                    name="RaffleStartedAtStr" 
+                                    value="@Model.Raffle.RaffleStartedAt.ToString("dd/MM/yyyy HH:mm", EnglishCultureInfo)" 
+                                    required="required" />
+                                    <label for="raffle_started_at">Başlangıç Tarihi</label>
+                                </div>
+
+                                <div class="form-group form-md-line-input">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    autocomplete="off"
+                                    id="raffle_ended_at"
+                                    name="RaffleEndedAtStr" 
+                                    value="@(Model.Raffle.RaffleEndedAt.HasValue ? Model.Raffle.RaffleEndedAt.Value.ToString("dd/MM/yyyy HH:mm") : "")" />
+                                    <label for="raffle_ended_at">Bitiş Tarihi</label>
+                                </div>
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+<div class="row">
+    @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ListeKapasitesiniGuncelleme))
+    {
+        <div class="col-md-6">
+            <div class="portlet blue box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-users"></i>Liste Kapasitesi
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-user-count-per-list')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleUserCountPerListAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "Raffle.UpdateRaffleUserCountPerListAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleUserCountPerListAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleUserCountPerListAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-user-count-per-list" }))
+                        {
+                            <div class="form-body">
+
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <div class="form-group form-md-line-input">
+                                    <input 
+                                    type="text" 
+                                    class="form-control raffle-user-count-per-list-input" 
+                                    autocomplete="off"
+                                    id="user_count_per_list"
+                                    name="UserCountPerList" 
+                                    value="@Model.Raffle.UserCountPerList" 
+                                    required="required" />
+                                    <label for="user_count_per_list">Liste Kapasitesi</label>
+                                </div>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.SiralamaYenileme))
+    {
+        <div class="col-md-6">
+            <div class="portlet purple box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-sort"></i>Sıralamayı Yenile
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-number-and-sequence')">
+                            <i class="fa fa-play"></i>Başlat</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdateRaffleParticipantsNumberAndSequenceAjax", "Raffle",
+                        new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin =   "Raffle.UpdateRaffleParticipantsNumberAndSequenceAjaxBegin",
+                        OnSuccess = "Raffle.UpdateRaffleParticipantsNumberAndSequenceAjaxSuccess",
+                        OnFailure = "Raffle.UpdateRaffleParticipantsNumberAndSequenceAjaxFailure"
+                    },
+                    new { id = "form-update-raffle-participant-number-and-sequence" }))
+                        {
+                            <div class="form-body">
+
+                                <input type="hidden" name="ID" value="@Model.Raffle.ID">
+
+                                <p>Çekiliş kapasitesine göre katılımcılar yeniden numaralandırılır.</p>
+                                <p>Mevcut Liste Kapasitesi: <strong><span class="raffle-user-count-per-list">@Model.Raffle.UserCountPerList</span> Kişi</strong></p>
+                                <p>Katılımcıların numaralandırılma şartı:</p>
+                                <table class="table">
+                                    <tr>
+                                        <th>Katılım Durumu</th>
+                                        <td>Çekilişe Dahil Edildi</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Onay Durumu</th>
+                                        <td>Onaylandı</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Görünür</th>
+                                        <td>Evet</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Durum</th>
+                                        <td>Aktif</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Silindi</th>
+                                        <td>Hayır</td>
+                                    </tr>
+                                </table>
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+<div class="modal fade" id="send-raffle-status-email-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title"></h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendEmailRaffleStatusAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "Raffle.SendEmailRaffleStatusAjaxBegin",
+                OnSuccess = "Raffle.SendEmailRaffleStatusAjaxSuccess",
+                OnFailure = "Raffle.SendEmailRaffleStatusAjaxFailure"
+            }, new {
+                id = "form-send-email-raffle-status"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="TKEmailTemplate" id="sendemail_rafflestatus_tkemailtemplate" />
+                    <input type="hidden" name="RaffleID" id="sendemail_rafflestatus_raffleid" value="@Model.Raffle.ID" />
+
+                    <p>
+                        Çekiliş katılımcılarına Email gönderilecek. İşlemi onaylıyor musunuz?
+                    </p>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">Evet</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="send-raffle-status-sms-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title"></h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendSmsRaffleStatusAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "Raffle.SendSmsRaffleStatusAjaxBegin",
+                OnSuccess = "Raffle.SendSmsRaffleStatusAjaxSuccess",
+                OnFailure = "Raffle.SendSmsRaffleStatusAjaxFailure"
+            }, new {
+                id = "form-send-sms-raffle-status-ended"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="TKSmsTemplate" id="sendsms_rafflestatus_tksmstemplate" />
+                    <input type="hidden" name="RaffleID" id="sendsms_rafflestatus_raffleid" value="@Model.Raffle.ID" />
+
+                    <p>
+                        Çekiliş katılımcılarına SMS gönderilecek. İşlemi onaylıyor musunuz?
+                    </p>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="TKEmailTemplate_RaffleStarted" value="@((int)TK.TKEmailTemplate.RaffleStarted)" />
+<input type="hidden" id="TKEmailTemplate_RaffleEnded" value="@((int)TK.TKEmailTemplate.RaffleEnded)" />
+
+<input type="hidden" id="TKSmsTemplate_RaffleStarted" value="@((int)TK.TKSmsTemplate.RaffleStarted)" />
+<input type="hidden" id="TKSmsTemplate_RaffleEnded" value="@((int)TK.TKSmsTemplate.RaffleEnded)" />

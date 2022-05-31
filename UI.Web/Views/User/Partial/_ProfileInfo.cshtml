@@ -1,0 +1,243 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+}
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateUserProfileAjax", "User",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin = "User.UpdateUserProfileAjaxBegin",
+            OnSuccess = "User.UpdateUserProfileAjaxSuccess",
+            OnFailure = "User.UpdateUserProfileAjaxFailure"
+        },
+        new { id = "form-profile-info" }))
+    {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.User.ID">
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">Takım</span>
+                <select class="select2 form-control"
+                    id="user_team_id"
+                    name="UserTeamID">
+                    <option></option>
+
+                    @foreach (var item in Model.UserTeamList)
+                    {
+                        <option 
+                            @(item.ID == Model.UserProfile.UserTeamID ? "selected=\"selected\"" : "")
+                            value="@item.ID">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-radios form-md-line-input">
+                <label>Cinsiyet</label>
+                <div class="md-radio-inline">
+                    <div class="md-radio">
+                        <input type="radio" id="gender_male" name="gender" class="md-radiobtn" 
+                        value="true" 
+                        @(Model.UserProfile.Gender.HasValue && Model.UserProfile.Gender.Value ? "checked=\"checked\"" : "") />
+                        <label for="gender_male">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Erkek
+                        </label>
+                    </div>
+                    <div class="md-radio">
+                        <input type="radio" id="gender_female" name="gender" class="md-radiobtn" 
+                        value="false"
+                        @(Model.UserProfile.Gender.HasValue && !Model.UserProfile.Gender.Value ? "checked=\"checked\"" : "") />
+                        <label for="gender_female">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Kadın
+                        </label>
+                    </div>
+                    <div class="md-radio">
+                        <input type="radio" id="gender_null" name="gender" class="md-radiobtn" 
+                        value="null"
+                        @(!Model.UserProfile.Gender.HasValue ? "checked=\"checked\"" : "") />
+                        <label for="gender_null">
+                            <span></span>
+                            <span class="check"></span>
+                            <span class="box"></span>
+                            Belirtilmedi
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input ">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="birthdate"
+                    name="BirthdateStr" 
+                    autocomplete="off"
+                    value="@(Model.UserProfile.Birthdate.HasValue ? Model.UserProfile.Birthdate.Value.ToString("dd.MM.yyyy") : "")" />
+                <label for="birthdate">Doğum Tarihi</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">Bulunduğu Şehir</span>
+                <select class="select2 form-control"
+                    id="city_id"
+                    name="CityID">
+                    <option></option>
+
+                    @foreach (var item in Model.CityList)
+                    {
+                        <option 
+                            @(item.ID == Model.UserProfile.CityID ? "selected=\"selected\"" : "")
+                            value="@item.ID">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">İş Ünvanı</span>
+                <select class="select2 form-control"
+                    id="tk_job_title"
+                    name="TKJobTitle">
+                    <option></option>
+
+                    @foreach (var item in Model.TKJobTitleList)
+                    {
+                        <option 
+                            @(item.Value == (int)Model.UserProfile.TKJobTitle ?
+                            "selected=\"selected\"" : "")
+                            value="@item.Value">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label
+                @(Model.UserProfile.TKJobTitle != TK.TKJobTitle.Other ? "hidden" : "")"
+                id="div_other_job_title">
+                <input type="text" class="form-control" 
+                    id="other_job_title"
+                    name="OtherJobTitle" 
+                    value="@Model.UserProfile.OtherJobTitle" />
+                <label for="other_job_title">Diğer İş Ünvanı</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input type="text" class="form-control" 
+                    id="company_title"
+                    name="CompanyTitle" 
+                    value="@Model.UserProfile.CompanyTitle">
+                <label for="company_title">Çalıştığı Şirket</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                <span class="text-gray">Şirketin Endüstrisi</span>
+                <select class="select2 form-control"
+                    id="tk_industry"
+                    name="TKIndustry">
+                    <option></option>
+
+                    @foreach (var item in Model.TKIndustryList)
+                    {
+                        <option 
+                            @(item.Value == (int)Model.UserProfile.TKIndustry ?
+                            "selected=\"selected\"" : "")
+                            value="@item.Value">@item.Name</option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label
+                @(Model.UserProfile.TKIndustry != TK.TKIndustry.Other ? "hidden" : "")"
+                id="div_other_industry">
+                <input type="text" class="form-control" 
+                    id="other_industry"
+                    name="OtherIndustry" value="@Model.UserProfile.OtherIndustry" />
+                <label for="other_industry">Diğer İş Ünvanı</label>
+            </div>
+
+            <div class="form-group form-md-line-input from-md-floating-label">
+                @if (string.IsNullOrEmpty(Model.UserProfile.ProfileURL))
+                {
+                    <img src="/assets/content/img/gender_none.png" width="200" class="img-responsive" />
+                }
+                else
+                {
+                    <img 
+                        src="@(string.Format("{0}{1}", CDNBaseURL, Model.UserProfile.ProfileURL))"
+                        width="200" class="img-responsive"  />
+                }
+                <a href="#update_profile_url" data-toggle="modal" class="btn default">DEĞİŞTİR</a>
+            </div>
+
+        </div>
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+    }
+</div>
+
+<div id="update_profile_url" class="modal fade" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Profil Fotoğrafını Güncelle</h4>
+            </div>
+
+            @using (Html.BeginForm("UpdateProfileURLAjax", "User", FormMethod.Post, new { id = "form-profile-photo-save-ajax" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+
+                    <input type="hidden" name="ID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input form-md-floating-label" style="display: table-row-group;">
+                        <div class="col-md-12">
+                            <div class="fileinput fileinput-new" data-provides="fileinput">
+                                <div class="fileinput-new thumbnail" style="width: 300px; height: 300px;">
+                                    <img src="/assets/content/img/gender_none.png" class="img-responsive"
+                                        style="height: 100%;" />
+                                </div>
+                                <div class="fileinput-preview fileinput-exists thumbnail" style="width: 300px;"></div>
+                                <div>
+                                    <span class="btn default btn-file">
+                                        <span class="fileinput-new">RESİM SEÇİNİZ</span>
+                                        <span class="fileinput-exists">DEĞİŞTİR </span>
+                                        <input type="file" id="profileurl" name="ProfileURL">
+                                    </span>
+                                    <a href="javascript:;" class="btn red fileinput-exists" data-dismiss="fileinput">KALDIR</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <br />
+                    <small class="pull-left"><span class="label label-sm label-info">Bilgi:</span>Görsel seçilmeden Güncelle butonuna basılması halinde mevcut görsel silinir.</small>
+                    <br />
+                    <br />
+                    <div class="clearfix"></div>
+                    <button type="button" data-dismiss="modal" class="btn dark btn-outline">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÜNCELLE</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="OtherTKJobTitle" value="@((int)TK.TKJobTitle.Other)" />
+<input type="hidden" id="OtherTKIndustry" value="@((int)TK.TKIndustry.Other)" />

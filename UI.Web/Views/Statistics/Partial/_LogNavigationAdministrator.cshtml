@@ -1,0 +1,39 @@
+﻿@using Sky.CMS.Services
+@using Sky.Log.DTO
+@model UI.Web.Models.Statistics.LogListModel
+@{
+    Layout = null;
+    List<LogNavigationAdministrator> LogList = ((List<BaseDTO>)Model.LogList).Cast<LogNavigationAdministrator>().ToList();
+    string AdministratorFullName = Model.AdministratorID.HasValue ? string.Format("{0} {1}", Model.Administrator.FirstName, Model.Administrator.LastName) : null;
+}
+
+<table class="table table-striped table-bordered table-hover table-checkable order-column" id="item_list">
+    <thead>
+        <tr>
+            <th class="hidden"></th>
+            <th class="col-md-2">Yönetici</th>
+            <th class="col-md-2 text-center">Website</th>
+            <th>URL</th>
+            <th class="col-md-1 text-center">IP Adres</th>
+            <th class="col-md-2 text-center">Tarih</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in LogList)
+        {
+            <tr class="odd gradeX object-item" id="object_@item.ID">
+                <td class="hidden">&nbsp;</td>
+                <td>
+                    @(Model.UserID.HasValue ? AdministratorFullName : item.AdministratorFullName)
+                </td>
+                <td class="text-center">@WebsiteService.GetWebsiteNameByID(item.WebsiteID)</td>
+                <td>@item.URL</td>
+                <td class="text-center">@item.IPAddress</td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<input type="hidden" id="orderNum" value="5" />

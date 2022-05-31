@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "Oops";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    Sky.Common.DTO.Result Result = ViewBag.Result;
+}
+
+@section topCSS{
+    <link href="/assets/pages/css/error.min.css" rel="stylesheet" type="text/css" />
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>404</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12 page-404">
+            <div class="number font-green vertical-middle">@ViewBag.StatusCode</div>
+            <div class="details vertical-middle">
+                <h3>Hay Aksi, Bir Hata Oluştu</h3>
+                <p>
+                    <span>@Result.Message</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+    <script>
+        $(document).ready(function () {
+            Log.URLErrorAdministrator();
+        });
+    </script>
+}

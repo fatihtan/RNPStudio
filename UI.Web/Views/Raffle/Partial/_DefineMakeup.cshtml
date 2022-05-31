@@ -1,0 +1,317 @@
+﻿@using Sky.Common.DTO
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleParticipantModel
+
+@{
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+<div class="form">
+    @if (!Model.RaffleParticipant.EventualFollowerCount.HasValue)
+    {
+        <div class="alert margin-bottom-40">
+            <p class="margin-top-20 margin-bottom-20">
+                <label class="label md-skip label-warning font-weight-600">UYARI</label>
+                Çekiliş katılım kaydına <strong>Bitiş Takipçi Sayısı</strong> girilmediği için telafi çekiliş tanımlanamaz.
+            </p>
+        </div>
+    }
+    else if (Model.RaffleParticipant.TKRaffleParticipationStatus != TK.TKRaffleParticipationStatus.RaffleCompleted)
+    {
+        <div class="alert margin-bottom-40">
+            <p class="margin-top-20 margin-bottom-40">
+                <label class="label md-skip label-warning font-weight-600">UYARI</label>
+                Katılım durumu <strong>@(TypeService.GetNameByValue(TK.TKRaffleParticipationStatus.RaffleCompleted))</strong> durumunda olmadığı için telafi çekiliş tanımlanamaz.
+            </p>
+
+            <table class="table">
+                <tr>
+                    <th>Mevcut Çekiliş Katılımı Durumu</th>
+                    <td>@TypeService.GetNameByValue(Model.RaffleParticipant.TKRaffleParticipationStatus)</td>
+                </tr>
+            </table>
+
+        </div>
+    }
+    else if (Model.RaffleParticipant.EventualFollowerCount - Model.RaffleParticipant.InitialFollowerCount >= Model.RaffleParticipant.TargetFollowerCount)
+    {
+        <div class="alert margin-bottom-40">
+            <p class="margin-top-20 margin-bottom-20">
+                <label class="label md-skip label-warning font-weight-600">UYARI</label>
+                Bu çekiliş katılımı telafi için <strong>uygun değildir</strong>. Lütfen aşağıdaki tabloyu inceleyiniz.
+            </p>
+
+            <table class="table">
+                <tr>
+                    <th class="text-center">Hedef Takipçi Sayısı</th>
+                    <th class="text-center">Başlangıç Takipçi Sayısı</th>
+                    <th class="text-center">Bitiş Takipçi Sayısı</th>
+                    <th class="text-center">Gönderilen Takipçi Sayısı</th>
+                    <th class="text-center">Fazladan Gönderilen Takipçi Sayısı</th>
+                </tr>
+                <tr>
+                    <td class="text-center">@Model.RaffleParticipant.TargetFollowerCount</td>
+                    <td class="text-center">@Model.RaffleParticipant.InitialFollowerCount</td>
+                    <td class="text-center">@Model.RaffleParticipant.EventualFollowerCount</td>
+                    <td class="text-center">@(Model.RaffleParticipant.EventualFollowerCount - Model.RaffleParticipant.InitialFollowerCount)</td>
+                    <td class="text-center">@((Model.RaffleParticipant.EventualFollowerCount - Model.RaffleParticipant.InitialFollowerCount) - Model.RaffleParticipant.TargetFollowerCount)</td>
+                </tr>
+            </table>
+        </div>
+    }
+    else
+    {
+        if (Model.RaffleParticipant.IsMakeUpDefined)
+        {
+        <div class="m-heading-1 border-blue m-bordered border-overrite">
+            <div class="alert margin-bottom-40">
+                <p class="margin-top-20 margin-bottom-20">
+                    <label class="label md-skip label-warning font-weight-600">UYARI</label>
+                    Bu çekiliş telafi için daha önce telafi tanımlanmıştır. Aşağıdaki tablo daha önce tanımlanan telafi çekilişlerini göstermektedir. Bu uyarı sadece bilgilendirmek amaçlıdır.
+                </p>
+            </div>
+            <table class="table table-striped table-bordered table-hover dt-responsive" id="table_makeup_raffle_participant_list">
+                <thead>
+                    <tr>
+                        <th class="all">Katılım No</th>
+                        <th class="all">Ç. No</th>
+                        <th class="all">Hesap Adı</th>
+                        <th class="all">Liste Kodu</th>
+                        <th class="all">Katılım Türü</th>
+                        <th class="all">Katılım Durumu</th>
+                        <th class="all">Hedef</th>
+                        <th class="all">Başlangıç</th>
+                        <th class="all">Bitiş</th>
+                        <th class="all text-center">Onaylı</th>
+                        <th class="all text-center">Durum</th>
+                        <th class="all text-center">Tarih</th>
+
+                        <th class="none">Onay Tarihi</th>
+                        <th class="none">Başlangıç Ekran Görüntüsü</th>
+                        <th class="none">Bitiş Ekran Görüntüsü</th>
+                        <th class="none">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.MakeUpRaffleParticipantList)
+                    {
+                        <tr>
+                            <td>@item.ID.ToString("00000")</td>
+                            <td>@item.RaffleID.ToString("00000")</td>
+                            <td class="absolute-td">
+                                @item.SocialMediaAccount.AccountName
+                                <span class="absolute-td-social"><i class="fa fa-@(item.SocialMediaAccount.TKSocialMediaPlatform.ToString().ToLower(EnglishCultureInfo))"></i></span>
+                            </td>
+                            <td>@item.GetListCode()</td>
+                            <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationType))</td>
+                            <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationStatus))</td>
+                            <td>@item.TargetFollowerCount</td>
+                            <td>@item.InitialFollowerCount</td>
+                            <td>@item.EventualFollowerCount</td>
+
+                            <td class="text-center">
+                                <span class="label label-sm label-@(item.IsConfirmed ? "success" : "warning")">
+                                    @(item.IsConfirmed ? "EVET" : "HAYIR")
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                                    @(item.IsActive ? "AKTİF" : "PASİF")
+                                </span>
+                            </td>
+
+                            <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+                            <td>@(item.ConfirmedAt.HasValue ? item.ConfirmedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.InitialScreenShot))
+                                {
+                                    <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.InitialScreenShot))" />
+                                }
+                                else
+                                {
+                                    <span>Girilmedi</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.EventualScreenShot))
+                                {
+                                    <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.EventualScreenShot))" />
+                                }
+                                else
+                                {
+                                    <span>Girilmedi</span>
+                                }
+                            </td>
+
+                            <td>
+                                <a href="/Raffle/ParticipantDetail/@item.ID" class="btn btn-sm btn-default text-proper">
+                                    <i class="fa fa-edit"></i>&nbsp;GÖRÜNTÜLE</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+        
+        <div class="margin-bottom-10">&nbsp;</div>
+        
+        <div class="m-heading-1 border-green m-bordered border-overrite">
+            <div class="alert margin-bottom-40">
+                <p class="margin-top-20 margin-bottom-20">
+                    <label class="label md-skip label-success font-weight-600">BİLGİ</label>
+                    Bu çekiliş telafi için <strong>uygundur.</strong>
+                </p>
+
+                <table class="table">
+                    <tr>
+                        <th class="text-center">Hedef Takipçi Sayısı</th>
+                        <th class="text-center">Başlangıç Takipçi Sayısı</th>
+                        <th class="text-center">Bitiş Takipçi Sayısı</th>
+                        <th class="text-center">Gönderilen Takipçi Sayısı</th>
+                        <th class="text-center">Eksik Takipçi Sayısı</th>
+                    </tr>
+                    <tr>
+                        <td class="text-center">@Model.RaffleParticipant.TargetFollowerCount</td>
+                        <td class="text-center">@Model.RaffleParticipant.InitialFollowerCount</td>
+                        <td class="text-center">@Model.RaffleParticipant.EventualFollowerCount</td>
+                        <td class="text-center">@(Model.RaffleParticipant.EventualFollowerCount - Model.RaffleParticipant.InitialFollowerCount)</td>
+                        <td class="text-center">@(Model.RaffleParticipant.TargetFollowerCount - (Model.RaffleParticipant.EventualFollowerCount - Model.RaffleParticipant.InitialFollowerCount))</td>
+                    </tr>
+                </table>
+            </div>
+
+            @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.TelafiTanimlamaIslemi))
+            {
+                using (Html.BeginForm("SaveMakeUpRaffleParticipantAjax", "Raffle", FormMethod.Post, new { id = "form-save-makeup-raffle-participant" }))
+                {
+                @Html.AntiForgeryToken()
+
+                        
+                <div class="form-body">
+                    <input type="hidden" name="PreviousRaffleParticipantID" value="@Model.RaffleParticipant.ID" />
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <input
+                            type="text"
+                            class="form-control"
+                            autocomplete="off"
+                            value="@(string.Format("{0} {1}", Model.Customer.FirstName, Model.Customer.LastName))"
+                            disabled="disabled"
+                            readonly="readonly" />
+                        <label>Müşteri Adı Soyadı</label>
+                        <span class="help-block"></span>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a class="btn btn-sm green form-control-top-button pull-right"
+                                    id="hyper-add-new-account"
+                                    target="_blank"
+                                    href="/Customer/SocialMediaAccountSave/@Model.Customer.ID">
+                                    <i class="fa fa-plus"></i>&nbsp;Yeni Hesap Ekle
+                                </a>
+
+                                <a class="btn btn-sm green form-control-top-button pull-right margin-right-10"
+                                    id="refresh-social-media-acocunts">
+                                    <i class="fa fa-refresh"></i>&nbsp;Yenile
+                                </a>
+                            </div>
+                        </div>
+                        <span class="text-gray">Sosyal Medya Hesabı</span>
+                        <select class="select2 form-control"
+                            id="social_media_account_id"
+                            name="SocialMediaAccountID"
+                            required="required">
+                            <option class="ignore-me"></option>
+
+                            @foreach (var item in Model.SocialMediaAccountList)
+                            {
+                                <option value="@item.ID">
+                                    @item.AccountName
+                                    @(string.Format("<span class='label md-skip font-weight-600 label-success pull-right'>{0}</span>", item.TKSocialMediaPlatform.ToString()))
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                        <span class="text-gray">Telafi İçin Uygun Çekiliş Paketleri</span>
+                        <select class="select2 form-control"
+                            id="raffle_id"
+                            name="RaffleID"
+                            required="required">
+                            <option></option>
+
+                            @foreach (var item in Model.RaffleList)
+                            {
+                                <option value="@item.ID" data-price="@item.RaffleTemplate.Price.ToString("0.00")">
+                                    @(string.Format("Başlangıç: {0}", item.RaffleStartedAt.ToString("dd MMMM yyyy HH:mm", TurkishCultureInfo)))
+                                    @(string.Format("<span class='label md-skip label-success pull-right'>{0}</span>", item.RaffleTemplate.Name))
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="div-thumb-from-file">
+                        <label class="label-switch col-md-2">Mevcut Ekran Görüntüsü</label>
+                        <div class="fileinput fileinput-new" data-provides="fileinput">
+                            <div class="fileinput-new thumbnail" style="width: 300px;">
+                                <img src="/assets/content/img/noimage.png" />
+                            </div>
+                            <div class="fileinput-preview fileinput-exists thumbnail" style="max-width: 300px;"></div>
+                            <div>
+                                <span class="btn default btn-file">
+                                    <span class="fileinput-new">GÖZAT</span>
+                                    <span class="fileinput-exists">DEĞİŞTİR </span>
+                                    <input type="file" data-max-size="4000000" id="makeup_initial_screen_shot" name="InitialScreenShot" required="required" />
+                                </span>
+                                <a href="javascript:;" class="btn red fileinput-exists"
+                                    data-dismiss="fileinput">KALDIR </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <input
+                            type="text"
+                            class="form-control"
+                            autocomplete="off"
+                            id="makeup_initial_follower_count"
+                            name="InitialFollowerCount"
+                            required="required" />
+                        <label for="initial_follower_count">Mevcut Takipçi Sayısı</label>
+                        <span class="help-block">Hesabın şu anki takipçi sayısını giriniz</span>
+                    </div>
+
+                </div>
+
+                <div class="form-actions noborder">
+                    <div class="col-md-3">
+                        <button type="submit" id="submit-makeup-raffle" class="btn btn-block blue"><i class="fa fa-save"></i>KAYDET</button>
+                    </div>
+                </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    Telafi tanımlamak için yetkiniz bulunmamaktadır.
+                </div>
+            }
+
+        </div>
+    }
+</div>

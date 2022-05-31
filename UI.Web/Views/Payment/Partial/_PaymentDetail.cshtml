@@ -1,0 +1,320 @@
+﻿@using Sky.Common.Extensions
+@using Sky.CMS.Services
+@model UI.Web.Models.Payment.PaymentModel
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+        <div class="portlet yellow-crusta box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-shopping-cart"></i>Ödeme
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ödeme No</div>
+                    <div class="col-md-7 value">
+                        @Model.Payment.ID.ToString("00000")
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Son Hareket</div>
+                    <div class="col-md-7 value" id="last-tk-payment-status">
+                        @TypeService.GetNameByValue(Model.Payment.LastTKPaymentStatus)
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Toplam Tutar</div>
+                    <div class="col-md-7 value">@Model.Payment.TotalPrice.ToThousandSeperatorWithCurrency()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ödenen Tutar</div>
+                    <div class="col-md-7 value">@Model.Payment.AmountPaid.ToThousandSeperatorWithCurrency()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ödeme Türü</div>
+                    <div class="col-md-7 value">@TypeService.GetNameByValue(Model.Payment.TKPaymentType)</div>
+                </div>
+                @if (Model.Payment.TKPaymentType == Sky.Common.DTO.TK.TKPaymentType.Transfer)
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Ödeme Yapılan Banka</div>
+                        <div class="col-md-7 value">
+                            @if (Model.Payment.BankAccount != null)
+                            {
+                                <span>@(string.Format("{0} - {1} ({2})", Model.Payment.BankAccount.BankName, Model.Payment.BankAccount.IBAN, Model.Payment.BankAccount.Owner))</span>
+                                <br />
+                            }
+
+                            @if (Model.Payment.IsCompanyBankAccountReceiver.HasValue && Model.Payment.IsCompanyBankAccountReceiver.Value)
+                            {
+                                <span class="label label-success">RNP Reklam Banka Hesabı</span>
+                            }
+                            else if (Model.Payment.IsCompanyBankAccountReceiver.HasValue && !Model.Payment.IsCompanyBankAccountReceiver.Value)
+                            {
+                                <span class="label label-info">Kullanıcı Banka Hesabı</span>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                <div class="row static-info">
+                    <div class="col-md-5 name">Finansal Onay Tarihi</div>
+                    <div class="col-md-7 value">@(Model.Payment.FinancialConfirmedAt.HasValue ?
+                    Model.Payment.FinancialConfirmedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo) : "")
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Finansal Onaylı</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-sm label-@(Model.Payment.IsFinancialConfirmed ? "success" : "warning")">
+                            @(Model.Payment.IsFinancialConfirmed ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">İptal Durumu</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-sm label-@(Model.Payment.IsCancelled ? "danger" : "info")">
+                            @(Model.Payment.IsCancelled ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Görünür</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-sm label-@(Model.Payment.IsShown ? "info" : "warning")">
+                            @(Model.Payment.IsShown ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Durum</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-sm label-@(Model.Payment.IsActive ? "info" : "warning")">
+                            @(Model.Payment.IsActive ? "AKTİF" : "PASİF")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Silindi</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-sm label-@(Model.Payment.IsDeleted ? "danger" : "info")">
+                            @(Model.Payment.IsDeleted ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">IP Adres</div>
+                    <div class="col-md-7 value">@Model.Payment.IPAddress</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.Payment.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet green box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-wallet"></i>Komisyon
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Komisyonu</div>
+                    <div class="col-md-7 value">
+                        <span class="label label-@(Model.Payment.IsRaffleTemplateCommissionApplied ? "info" : "success")">
+                            @(Model.Payment.IsRaffleTemplateCommissionApplied ? "UYGULANDI" : "UYGULANMADI")
+                        </span>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kullanıcı Komisyon Oranı (Uygulanan)</div>
+                    <div class="col-md-7 value">% @Model.Payment.UserCommissionRate.ToString("0.00")</div>
+                </div>
+
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kullanıcı Komisyon Tutarı</div>
+                    <div class="col-md-7 value">
+                        @{
+                            decimal commissionPrice = Model.Payment.AmountPaid * (decimal)Model.Payment.UserCommissionRate / 100;
+                        }
+                        @commissionPrice.ToThousandSeperatorWithCurrency()
+                    </div>
+                </div>
+
+                @if (Model.Payment.LeaderUserCommissionRate.HasValue)
+                {
+                    <hr />
+                    
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Takım Lideri</div>
+                        <div class="col-md-7 value">@Model.Payment.LeaderActorFullName</div>
+                    </div>
+                    
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Takım Lideri Komisyon Oranı (Uygulanan)</div>
+                        <div class="col-md-7 value">% @Model.Payment.LeaderUserCommissionRate.Value.ToString("0.00")</div>
+                    </div>
+                    
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Takım Lideri Komisyon Tutarı</div>
+                        <div class="col-md-7 value">
+                            @{
+                                decimal leaderCommissionPrice = Model.Payment.AmountPaid * (decimal)Model.Payment.LeaderUserCommissionRate.Value / 100;
+                            }
+
+                            @leaderCommissionPrice.ToThousandSeperatorWithCurrency()
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="portlet purple box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-layers"></i>Çekiliş Paketi
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Adı</div>
+                    <div class="col-md-7 value">@Model.Payment.RaffleTemplate.Name</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Fiyatı</div>
+                    <div class="col-md-7 value">@Model.Payment.RaffleTemplate.Price.ToThousandSeperatorWithCurrency()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hedef Takipçi Sayısı</div>
+                    <div class="col-md-7 value">@Model.Payment.RaffleTemplate.TargetFollowerCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+        <div class="portlet blue box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-share"></i>Sosyal Medya Hesabı
+                </div>
+                <div class="actions">
+                    <a href="/Customer/SocialMediaAccountUpdate/@Model.Payment.SocialMediaAccountID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Platform</div>
+                    <div class="col-md-7 value">@Model.Payment.SocialMediaAccount.TKSocialMediaPlatform.ToString()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hesap Adı</div>
+                    <div class="col-md-7 value">@Model.Payment.SocialMediaAccount.AccountName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Platform (Metadata)</div>
+                    <div class="col-md-7 value">@Model.Payment.TKSocialMediaPlatform.ToString()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hesap Adı (Metadata)</div>
+                    <div class="col-md-7 value">@Model.Payment.SocialMediaAccountName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">S.M Hesabı Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.Payment.SocialMediaAccount.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet blue-hoki box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-user"></i>Müşteri
+                </div>
+                <div class="actions">
+                    <a href="/Customer/Detail/@Model.Customer.ID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ad</div>
+                    <div class="col-md-7 value">@Model.Customer.FirstName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Soyad</div>
+                    <div class="col-md-7 value">@Model.Customer.LastName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Email</div>
+                    <div class="col-md-7 value">@Model.Customer.Email</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Customer.CountryPhoneCode))
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Telefon</div>
+                        <div class="col-md-7 value">@(string.Format("+{0} {1}", Model.Customer.CountryPhoneCode, Model.Customer.PhoneNumber))</div>
+                    </div>
+                }
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.Customer.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet red box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-user"></i>Oluşturan Kullanıcı
+                </div>
+                <div class="actions">
+                    <a href="/User/Detail/@Model.User.ID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ad</div>
+                    <div class="col-md-7 value">@Model.User.FirstName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Soyad</div>
+                    <div class="col-md-7 value">@Model.User.LastName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Email</div>
+                    <div class="col-md-7 value">@Model.User.Email</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Telefon</div>
+                    <div class="col-md-7 value">@Model.User.PhoneNumber</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.User.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row static-info">
+                    <div class="col-md-5 name">Komisyon Oranı</div>
+                    <div class="col-md-7 value">%@Model.User.CommissionRate</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Min Çekim Limiti</div>
+                    <div class="col-md-7 value">@Model.User.MinWithdraw.ToThousandSeperatorWithCurrency()</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

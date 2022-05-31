@@ -1,0 +1,216 @@
+﻿@using Sky.Ramesses.DTO
+
+@{
+    ViewBag.Title = "Email Gönder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+    User User = ViewBag.User ?? new User();
+}
+
+@section topCSS{
+    @Html.Partial("/Views/Shared/Partial/_FroalaCSS.cshtml")
+
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+}
+
+@section topJS{
+    @Html.Partial("/Views/Shared/Partial/_FroalaJS.cshtml")
+
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script src="/assets/global/plugins/tinymce/tinymce.min.js"></script>
+    <script src="/assets/content/js/tinymce_settings.js"></script>
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Email Gönder</span>
+            </li>
+        </ul>
+    </div>
+    <h1 class="page-title"></h1>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-send font-green"></i>
+                        <span class="caption-subject bold uppercase">Email Gönder</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    @using (Ajax.BeginForm("SendEmailOtherAjax", "Home",
+                    new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin =   "SendEmail.SendEmailOtherAjaxBegin",
+                        OnSuccess = "SendEmail.SendEmailOtherAjaxSuccess",
+                        OnFailure = "SendEmail.SendEmailOtherAjaxFailure"
+                    }, new
+                    {
+                        id = "form-send-email-other"
+                    }))
+                    {
+                        <div class="form-body">
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <input type="text"
+                                    class="form-control"
+                                    name="FullName"
+                                    id="sendemail_other_fullname"
+                                    autocomplete="off"
+                                    value="@(string.Format("{0} {1}", User.FirstName, User.LastName))"
+                                    required="required"
+                                    maxlength="100" />
+                                <label for="sendemail_other_fullname">Alıcı Adı Soyadı</label>
+                                <span class="help-block">Maksimum 100 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <input type="text"
+                                    class="form-control"
+                                    name="Email"
+                                    id="sendemail_other_email"
+                                    autocomplete="off"
+                                    value="@User.Email"
+                                    required="required"
+                                    maxlength="50" />
+                                <label for="sendemail_other_email">Email</label>
+                                <span class="help-block">Maksimum 50 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">BCC Kullan</label>
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio">
+                                        <input type="radio" name="UseBCC" value="true" checked="checked" />
+                                        Evet
+                                        <span></span>
+                                    </label>
+                                    <label class="mt-radio">
+                                        <input type="radio" name="UseBCC" value="false" />
+                                        Hayır
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label" id="div-send-email-other-bcc-email">
+                                <input type="text"
+                                    class="form-control"
+                                    name="BCCEmail"
+                                    id="sendemail_other_bccemail"
+                                    autocomplete="off"
+                                    required="required"
+                                    value="@ContactEmail"
+                                    maxlength="50" />
+                                <label for="sendemail_other_bccemail">BCC Email</label>
+                                <span class="help-block">Maksimum 50 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <input type="text"
+                                    class="form-control"
+                                    name="Subject"
+                                    id="sendemail_other_subject"
+                                    autocomplete="off"
+                                    required="required"
+                                    maxlength="500" />
+                                <label for="sendemail_other_subject">Konu</label>
+                                <span class="help-block">Maksimum 500 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label ">
+                                <label class="control-label col-md-2 label-switch">
+                                    Editor
+                                </label>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper">
+                                        <input type="radio"
+                                            value="1"
+                                            name="EditorType" />
+                                        Froala
+                                    </label>
+                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper active">
+                                        <input type="radio"
+                                            value="2"
+                                            name="EditorType"
+                                            checked="checked" />
+                                        TinyMCE
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!--    POST CONTENT (FROALA)    -->
+                            <div class="form-group form-md-line-input" id="div-content-froala" style="display: none;">
+                                <section>
+                                    <label class="text-gray" for="content">Açıklama (Froala)</label>
+                                    <textarea name="ContentFromFroala" id="content"></textarea>
+                                </section>
+                            </div>
+
+                            <!--    POST CONTENT (TINYMCE)   -->
+                            <div class="form-group form-md-line-input" id="div-content-tinymce">
+                                <section>
+                                    <label class="text-gray" for="content_tinymce">Açıklama (TinyMCE)</label>
+                                    <textarea name="ContentFromTinyMCE" id="content_tinymce"></textarea>
+                                </section>
+                            </div>
+                        </div>
+
+                        <div class="form-actions noborder">
+                            <div class="col-md-3">
+                                <button type="submit" id="submit" class="btn btn-block blue">GÖNDER</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+
+    <script src="/assets/content/js/ajax/sendemail.ajax.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            initializeWYSIWYG();
+        });
+
+        $('input[type=radio][name="EditorType"]').change(function () {
+            if (this.value == "1") {
+                $('#div-content-tinymce').hide('slow');
+                $('#div-content-froala').show('slow');
+            }
+            else if (this.value == "2") {
+                $('#div-content-froala').hide('slow');
+                $('#div-content-tinymce').show('slow');
+            }
+        });
+
+        $('#form-send-email-other input[name="UseBCC"]').on('change', function () {
+            if (this.value == "true") {
+                $('#div-send-email-other-bcc-email').removeClass('hidden');
+                $('#sendemail_other_bccemail').attr('required', 'required');
+            }
+            else if (this.value == "false") {
+                $('#div-send-email-other-bcc-email').addClass('hidden');
+                $('#sendemail_other_bccemail').removeAttr('required');
+            }
+        })
+
+        function initializeWYSIWYG() {
+            initFroala('#content', 400, $('#WebsiteID').val(), []);
+            initTinymce('#content_tinymce', 500);
+        }
+    </script>
+}

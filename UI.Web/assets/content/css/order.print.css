@@ -1,0 +1,105 @@
+﻿html, body, * {
+    margin: 0px;
+    padding: 0px;
+    font-family: monospace !important;
+    font-size: 11.5px !important;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+#container {
+    width: 100%;
+    background-color: red;
+}
+
+#user {
+    position: absolute;
+    top: 135px;
+    left: 35px;
+    max-width: 325px;
+}
+
+#tax-info {
+    position: absolute;
+    top: 293px;
+    left: 120px;
+}
+
+#datetime {
+    position: absolute;
+    top: 293px;
+    right: 150px;
+}
+
+#order-products {
+    position: absolute;
+    top: 391px;
+    left: 35px;
+}
+
+#order-no {
+    position: absolute;
+    top: 858px;
+    left: 50px;
+}
+
+#textified-price {
+    position: absolute;
+    top: 913px;
+    left: 80px;
+    margin-bottom: 100px;
+}
+
+#order-price {
+    position: absolute;
+    top: 888px;
+    right: 120px;
+}
+
+.table-user {
+    text-align: left;
+}
+
+    .table-user tr th {
+        min-width: 60px;
+    }
+
+    .table-user tr th, .table-user tr td {
+        padding-bottom: 10px;
+    }
+
+.table-tax-info tr td {
+    padding-bottom: 10px;
+}
+
+.table-order-products tr td {
+    padding-bottom: 10px;
+}
+
+.table-order-price tr td {
+    padding-bottom: 10px;
+    text-align: right;
+}
+
+.table-order-products tr td.description {
+    width: 361px;
+}
+
+.table-order-products tr td.quantity {
+    text-align: center;
+    width: 91px;
+}
+
+.table-order-products tr td.price-unit {
+    width: 76px;
+    padding-right: 30px;
+    text-align: right;
+}
+
+.table-order-products tr td.price-total {
+    width: 101px;
+    padding-right: 50px;
+    text-align: right;
+}

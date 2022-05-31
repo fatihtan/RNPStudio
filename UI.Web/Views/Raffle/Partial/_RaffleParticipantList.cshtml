@@ -1,0 +1,192 @@
+﻿@using Sky.Common.DTO
+@using Sky.Common.Extensions
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+}
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="alert alert-danger hidden" id="error-raffle-participant-list-container">
+            Güncellenemeyen Katılım Numaraları
+            
+            <div id="error-raffle-participant-list">
+            </div>
+        </div>
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KatilimDurumunuGuncelleme))
+        {
+            <div class="pull-right margin-bottom-20">
+                <a id="btn-update-raffle-participation-status-list" class="btn blue btn-outline">Katılım Durumunu Güncelle</a>
+            </div>
+        }
+
+        <table class="table table-striped table-bordered table-hover dt-responsive" id="table_raffle_participant_list">
+            <thead>
+                <tr>
+                    <th class="all">Katılım No</th>
+                    <th class="all">Ç. No</th>
+                    <th class="all">Hesap Adı</th>
+                    <th class="all">Liste Kodu</th>
+                    <th class="all">Katılım Türü</th>
+                    <th class="all">Katılım Durumu</th>
+                    <th class="all">Hedef</th>
+                    <th class="all">Başlangıç</th>
+                    <th class="all">Bitiş</th>
+                    <th class="all text-center">Onaylı</th>
+                    <th class="all text-center">Durum</th>
+                    <th class="all text-center">Tarih</th>
+                    <th class="all width-30">
+                        <input type="checkbox" class="form-control" id="select-all" />
+                    </th>
+
+                    <th class="none">Onay Tarihi</th>
+                    <th class="none">Başlangıç Ekran Görüntüsü</th>
+                    <th class="none">Bitiş Ekran Görüntüsü</th>
+                    <th class="none">&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.RaffleParticipantList)
+                {
+                    <tr class="object-item" id="object_@item.ID">
+                        <td>@item.ID.ToString("00000")</td>
+                        <td>@item.RaffleID.ToString("00000")</td>
+                        <td class="absolute-td">
+                            @item.SocialMediaAccount.AccountName
+                            <span class="absolute-td-social"><i class="fa fa-@(item.SocialMediaAccount.TKSocialMediaPlatform.ToString().ToLower(EnglishCultureInfo))"></i></span>
+                        </td>
+                        <td>@item.GetListCode()</td>
+                        <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationType))</td>
+                        <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationStatus))</td>
+                        <td>@item.TargetFollowerCount</td>
+                        <td>@item.InitialFollowerCount</td>
+                        <td>@item.EventualFollowerCount</td>
+
+                        <td class="text-center">
+                            <span class="label label-sm label-@(item.IsConfirmed ? "success" : "warning")">
+                                @(item.IsConfirmed ? "EVET" : "HAYIR")
+                            </span>
+                        </td>
+
+                        <td class="text-center">
+                            <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                                @(item.IsActive ? "AKTİF" : "PASİF")
+                            </span>
+                        </td>
+
+                        <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+                        <td class="text-center width-30">
+                            <input type="checkbox" class="form-control select-row" data-id="@item.ID" />
+                        </td>
+
+                        <td>@(item.ConfirmedAt.HasValue ? item.ConfirmedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.InitialScreenShot))
+                            {
+                                <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.InitialScreenShot))" />
+                            }
+                            else
+                            {
+                                <span>Girilmedi</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.EventualScreenShot))
+                            {
+                                <img class="img-responsive" src="@(string.Format("{0}/{1}", CDNBaseURL, item.EventualScreenShot))" />
+                            }
+                            else
+                            {
+                                <span>Girilmedi</span>
+                            }
+                        </td>
+
+                        <td>
+                            <a href="/Raffle/ParticipantDetail/@item.ID" class="btn btn-sm btn-default text-proper">
+                                <i class="fa fa-edit"></i>&nbsp;GÖRÜNTÜLE</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KatilimDurumunuGuncelleme))
+{
+    <div class="modal fade" id="update-raffle-participant-status-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Katılım Durumunu Güncelle</h4>
+                </div>
+
+                @using (Ajax.BeginForm("UpdateRaffleParticipationListStatusAjax", "Raffle",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin = "Raffle.UpdateRaffleParticipationListStatusAjaxBegin",
+                OnSuccess = "Raffle.UpdateRaffleParticipationListStatusAjaxSuccess",
+                OnFailure = "Raffle.UpdateRaffleParticipationListStatusAjaxFailure"
+            }, new
+            {
+                id = "form-update-raffle-participation-status"
+            }))
+                {
+                    <div class="modal-body">
+
+                        <input type="hidden" name="RaffleID" value="@Model.Raffle.ID" />
+
+                        <input type="hidden" name="RaffleParticipantListJSON" id="raffle_participant_list" />
+
+                        <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                            <label class="text-gray">Katılım Durumu</label>
+                            <select class="select2 form-control"
+                                id="tk_raffle_participation_status"
+                                name="TKRaffleParticipationStatus"
+                                required="required">
+                                <option></option>
+
+                                @foreach (var item in Model.TKRaffleParticipationStatusList)
+                                {
+                                    <option value="@item.Value">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <textarea
+                                name="Description"
+                                id="action_description"
+                                class="form-control"
+                                maxlength="500"
+                                rows="5"
+                                required="required"></textarea>
+                            <label for="description">Açıklama</label>
+                            <span class="help-block">Maximum uzunluk: 500 karakter</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                        <button type="submit" class="btn green">GÜNCELLE</button>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+}

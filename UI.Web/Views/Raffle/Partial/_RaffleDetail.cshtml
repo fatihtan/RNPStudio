@@ -1,0 +1,165 @@
+﻿@using Sky.Common.Extensions
+@using Sky.CMS.Services
+@model UI.Web.Models.Raffle.RaffleModel
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+        <div class="portlet yellow-crusta box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-sitemap"></i>Çekiliş
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Çekiliş No</div>
+                    <div class="col-md-7 value">
+                        @Model.Raffle.ID.ToString("00000")
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Çekiliş Durumu</div>
+                    <div class="col-md-7 value raffle-tk-raffle-status">@(TypeService.GetNameByValue(Model.Raffle.TKRaffleStatus))</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Başlangıç Tarihi</div>
+                    <div class="col-md-7 value raffle-started-at">@Model.Raffle.RaffleStartedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Bitiş Tarihi</div>
+                    <div class="col-md-7 value raffle-ended-at">@(Model.Raffle.RaffleEndedAt.HasValue ? Model.Raffle.RaffleEndedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo) : "")</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Liste Kapasitesi</div>
+                    <div class="col-md-7 value raffle-user-count-per-list">@Model.Raffle.UserCountPerList</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ortalama Takipçi</div>
+                    <div class="col-md-7 value raffle-average-follower-count">@(Model.Raffle.AverageFollowerCount.HasValue ? Model.Raffle.AverageFollowerCount.Value.ToString() : "Hesaplanmadı")</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Durum</div>
+                    <div class="col-md-7 value raffle-isactive">
+                        <span class="label label-sm label-@(Model.Raffle.IsActive ? "info" : "warning")">
+                            @(Model.Raffle.IsActive ? "AKTİF" : "PASİF")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Silindi</div>
+                    <div class="col-md-7 value raffle-isdeleted">
+                        <span class="label label-sm label-@(Model.Raffle.IsDeleted ? "danger" : "info")">
+                            @(Model.Raffle.IsDeleted ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">IP Adres</div>
+                    <div class="col-md-7 value">@Model.Raffle.IPAddress</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.Raffle.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet purple box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-layers"></i>Çekiliş Paketi
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Adı</div>
+                    <div class="col-md-7 value">@Model.RaffleTemplate.Name</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Fiyatı</div>
+                    <div class="col-md-7 value">@Model.RaffleTemplate.Price.ToThousandSeperatorWithCurrency()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hedef Takipçi Sayısı</div>
+                    <div class="col-md-7 value">@Model.RaffleTemplate.TargetFollowerCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+        <div class="portlet blue-hoki box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-users"></i>Katılımcı Özeti
+                </div>
+                <div class="actions">
+                    <button class="btn white btn-sm" id="open-raffle-participant-list-modal"><i class="fa fa-copy"></i>Listeyi Kopyala</button>
+                </div>
+            </div>
+            <div class="portlet-body">
+
+                <table class="table table-hover table-bordered" id="raffle-participant-list">
+
+                    @{
+                        var filteredRaffleParticipantList = Model.RaffleParticipantList
+                            .Where(rp => rp.IsConfirmed && rp.IsShown && rp.IsActive && !rp.IsDeleted)
+                            .OrderBy(rp => rp.ListNumber)
+                            .ThenBy(rp => rp.ListSequence);
+                    }
+
+                    <tr>
+                        <th>Katılım No</th>
+                        <th>Liste No</th>
+                        <th>Sıra No</th>
+                        <th>S.M Hesabı</th>
+                        <th>Katılım Durumu</th>
+                    </tr>
+                    @foreach (var item in filteredRaffleParticipantList)
+                    {
+                        <tr class="raffle-participant" id="summary-raffle-participant-@item.ID">
+                            <td class="summary-raffle-participant-id">
+                                <a href="/Raffle/ParticipantDetail/@item.ID" target="_blank">@item.ID.ToString("00000")</a>
+                            </td>
+                            <td class="summary-raffle-participant-listnumber">@item.ListNumber</td>
+                            <td class="summary-raffle-participant-listsequence">@item.ListSequence</td>
+                            <td class="summary-raffle-participant-social-media-account-name">@item.SocialMediaAccount.AccountName</td>
+                            <td class="summary-raffle-participant-tk-raffle-participant-status">@(TypeService.GetNameByValue(item.TKRaffleParticipationStatus))</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="copy-raffle-participant-list-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Katılımcıları Kopyala</h4>
+            </div>
+
+            <div class="modal-body">
+
+                <table class="table table-hover table-bordered" id="grouped-raffle-participant-list">
+
+                    <tr>
+                        <th>List Numarası</th>
+                        <th>Sosyal Medya Hesapları</th>
+                        <th>&nbsp;</th>
+                    </tr>
+
+                </table>
+                
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn dark btn-outline" data-dismiss="modal">KAPAT</button>
+            </div>
+
+        </div>
+    </div>
+</div>

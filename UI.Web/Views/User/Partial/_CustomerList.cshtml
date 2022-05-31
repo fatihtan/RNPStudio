@@ -1,0 +1,58 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+<table
+    class="table table-striped table-bordered table-hover table-checkable order-column"
+    id="table_customer_list">
+    <thead>
+        <tr>
+            <th class="hidden">&nbsp;</th>
+            <th>ID</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th class="col-md-1 text-center">Durum</th>
+            <th class="col-md-1 text-center">Silindi</th>
+            <th class="col-md-1 text-center">IP</th>
+            <th class="col-md-1 text-center">Tarih</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CustomerList)
+        {
+            <tr class="odd gradeX">
+                <td class="hidden">&nbsp;</td>
+                <td>@item.ID</td>
+                <td>@item.FirstName</td>
+                <td>@item.LastName</td>
+                <td>@item.Email</td>
+                <td>@(string.Format("+{0} {1}", item.CountryPhoneCode, item.PhoneNumber))</td>
+
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsActive ? "success" : "warning")">
+                        @(item.IsActive ? "AKTİF" : "PASİF")
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsDeleted ? "danger" : "info")">
+                        @(item.IsDeleted ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+
+                <td>@item.IPAddress</td>
+
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+                <td class="text-center">
+                    <a href="/Customer/Detail/@item.ID" 
+                        class="btn btn-sm text-proper">Git</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

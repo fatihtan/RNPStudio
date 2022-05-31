@@ -1,0 +1,282 @@
+﻿@using Sky.Common.DTO
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.User.UserModel
+
+@{
+    ViewBag.Title = string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName);
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.tr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-form/jquery.form.js"></script>
+    <script src="/assets/global/plugins/phone-number/phone.number.mask.js"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/User/List">Kullanıcılar</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <strong>
+                    <a href="/User/Detail/@Model.User.ID">@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)</a>
+                </strong>
+            </li>
+        </ul>
+    </div>
+
+    <h1 class="page-title"><small></small></h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN TAB PORTLET-->
+            <div class="portlet light bordered">
+                <div class="portlet-title tabbable-line">
+
+                    @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciyaNotEkleme))
+                    {
+                        <a href="#add-note-modal" data-toggle="modal" class="btn blue btn-outline text-proper"><i class="fa fa-plus"></i>Not Ekle</a>
+                    }
+
+                    <a href="/User/NoteList/@Model.User.ID" class="btn blue btn-outline text-proper"><i class="fa fa-sticky-note-o"></i>Notlar</a>
+
+                    <a href="/User/NotificationList/@Model.User.ID" class="btn blue btn-outline text-proper"><i class="icon-bell"></i>Bildirimler</a>
+
+                    <ul class="nav nav-tabs">
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciKisiselBilgileriniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#personal_info" data-toggle="tab">Kişisel</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciEkBilgileriGoruntuleme))
+                        {
+                            <li>
+                                <a href="#profile_info" data-toggle="tab">Ek Bilgiler</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciGirisBilgileri))
+                        {
+                            <li>
+                                <a href="#security_settings" data-toggle="tab">Giriş Bilgileri</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciKayitBilgileri))
+                        {
+                            <li>
+                                <a href="#register_detail" data-toggle="tab">Kayıt Bilgisi</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciBakiyeBilgileriniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#user_balance" data-toggle="tab">Bakiye</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciBankaHesaplariniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#bank_account_list" data-toggle="tab">Banka Hesapları</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininOdemeKayitlari))
+                        {
+                            <li>
+                                <a href="#payment_list" data-toggle="tab">Ödemeler</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininMusterileri))
+                        {
+                            <li>
+                                <a href="#customer_list" data-toggle="tab">Müşteriler</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KaydettigiCekilisKatilimlari))
+                        {
+                            <li>
+                                <a href="#raffleparticipant_list" data-toggle="tab">Çekiliş Katılımları</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininFaturaBilgileri))
+                        {
+                            <li>
+                                <a href="#bill_info_list" data-toggle="tab">Fatura Bilgileri</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininFaturalariniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#user_bill" data-toggle="tab">Faturalar</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininMesajlari))
+                        {
+                            <li>
+                                <a href="#message_list" data-toggle="tab">Mesajlar</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininLogKayitlari))
+                        {
+                            <li>
+                                <a href="#user_log" data-toggle="tab">Log</a>
+                            </li>
+                        }
+                        
+                    </ul>
+                </div>
+                <div class="portlet-body">
+                    <div class="tab-content">
+
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciKisiselBilgileriniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="personal_info">
+                                @Html.Partial("Partial/_PersonalInfo")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciEkBilgileriGoruntuleme))
+                        {
+                            <div class="tab-pane" id="profile_info">
+                                @Html.Partial("Partial/_ProfileInfo")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciGirisBilgileri))
+                        {
+                            <div class="tab-pane" id="security_settings">
+                                @Html.Partial("Partial/_SecuritySettings")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciKayitBilgileri))
+                        {
+                            <div class="tab-pane" id="register_detail">
+                                @Html.Partial("Partial/_RegisterDetail")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciBakiyeBilgileriniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="user_balance">
+                                @Html.Partial("Partial/_UserBalance")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciBankaHesaplariniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="bank_account_list">
+                                @Html.Partial("Partial/_BankAccountList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininOdemeKayitlari))
+                        {
+                            <div class="tab-pane" id="payment_list">
+                                @Html.Partial("Partial/_PaymentList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininMusterileri))
+                        {
+                            <div class="tab-pane" id="customer_list">
+                                @Html.Partial("Partial/_CustomerList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KaydettigiCekilisKatilimlari))
+                        {
+                            <div class="tab-pane" id="raffleparticipant_list">
+                                @Html.Partial("Partial/_RaffleParticipantList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininFaturaBilgileri))
+                        {
+                            <div class="tab-pane" id="bill_info_list">
+                                @Html.Partial("Partial/_BillInfoList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininFaturalariniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="user_bill">
+                                @Html.Partial("Partial/_UserBill")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininMesajlari))
+                        {
+                            <div class="tab-pane" id="message_list">
+                                @Html.Partial("Partial/_MessageList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullanicininLogKayitlari))
+                        {
+                            <div class="tab-pane" id="user_log">
+                                @Html.Partial("Partial/_UserLog")
+                            </div>
+                        }
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KullaniciyaNotEkleme))
+{
+    @Html.Partial("Partial/_UserNote")
+}
+
+<input type="hidden" id="CDNBaseURL" value="@(System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"])" />
+<input type="hidden" id="IsLocal" value="@HttpContext.Current.Request.IsLocal" />
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/user.ajax.js?v=1"></script>
+    <script src="/assets/content/js/user.detail.js?v=2"></script>
+}

@@ -1,0 +1,405 @@
+﻿@using Sky.Common.Extensions
+@using Sky.Common.DTO
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Payment.PaymentModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.OdemeAktivasyonu))
+        {
+            <div class="portlet green box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-bolt"></i>Aktivasyon
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-payment-activation');">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdatePaymentActivationAjax", "Payment",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "Payment.UpdatePaymentActivationAjaxBegin",
+                            OnSuccess = "Payment.UpdatePaymentActivationAjaxSuccess",
+                            OnFailure = "Payment.UpdatePaymentActivationAjaxFailure"
+                        },
+                        new { id = "form-update-payment-activation" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.Payment.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">İptal Durumu</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsCancelled", !Model.Payment.IsCancelled,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Hayır&nbsp;",
+                                            data_off_text = "&nbsp;Evet&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Görünür</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsShown", Model.Payment.IsShown,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Evet&nbsp;",
+                                            data_off_text = "&nbsp;Hayır&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Durum</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsActive", Model.Payment.IsActive,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Aktif&nbsp;",
+                                            data_off_text = "&nbsp;Pasif&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <label class="control-label label-switch col-md-3">Silindi</label>
+                                    <div class="col-md-2">
+                                        @Html.CheckBox("IsDeleted", !Model.Payment.IsDeleted,
+                                        new
+                                        {
+                                            @class = "make-switch",
+                                            data_on_text = "&nbsp;Hayır&nbsp;",
+                                            data_off_text = "&nbsp;Evet&nbsp;"
+                                        })
+                                    </div>
+                                </div>
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.FinansalOnay))
+        {
+            <div class="portlet green box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-check"></i>Finansal Onay
+                    </div>
+                    @if (!Model.Payment.IsFinancialConfirmed)
+                    {
+                        <div class="actions payment-financial-confirmed-false">
+                            <button class="btn white btn-sm" onclick="global.submitForm('#form-update-payment-financial-confirmation')">
+                                <i class="fa fa-check"></i>Onayla</button>
+                        </div>
+                    }
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdatePaymentFinancialConfirmationAjax", "Payment",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin =   "Payment.UpdatePaymentFinancialConfirmationAjaxBegin",
+                            OnSuccess = "Payment.UpdatePaymentFinancialConfirmationAjaxSuccess",
+                            OnFailure = "Payment.UpdatePaymentFinancialConfirmationAjaxFailure"
+                        },
+                        new { id = "form-update-payment-financial-confirmation" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.Payment.ID">
+
+                                @if (!Model.Payment.IsFinancialConfirmed)
+                                {
+                                    <div class="payment-financial-confirmed-false">
+                                        <p>Finansal onay vermeniz durumunda ödeme kaydını oluşturan kullanıcının/kullanıcıların hesabına eklenecek bakiye bilgisi aşağıdaki gibidir.</p>
+
+                                        <table class="table">
+                                            <tr>
+                                                <th>Kullanıcı</th>
+                                                <th>Ödeme Kaydı Tutarı</th>
+                                                <th>Komisyon Oranı</th>
+                                                <th>Komisyon Tutarı</th>
+                                            </tr>
+                                            <tr>
+                                                <td>@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)</td>
+                                                <td>@Model.Payment.AmountPaid.ToThousandSeperatorWithCurrency()</td>
+                                                <td>%@Model.Payment.UserCommissionRate</td>
+                                                <td>@(((Model.Payment.AmountPaid * (decimal)Model.Payment.UserCommissionRate) / 100).ToThousandSeperatorWithCurrency())</td>
+                                            </tr>
+
+                                            @if (Model.Payment.LeaderTKActor.HasValue)
+                                            {
+                                                <tr>
+                                                    <td>@Model.Payment.LeaderActorFullName (T. Lideri)</td>
+                                                    <td>@Model.Payment.AmountPaid.ToThousandSeperatorWithCurrency()</td>
+                                                    
+                                                    @if (Model.Payment.LeaderUserCommissionRate.HasValue)
+                                                    {
+                                                        <td>%@Model.Payment.LeaderUserCommissionRate.Value</td>
+                                                        <td>@(((Model.Payment.AmountPaid * (decimal)Model.Payment.LeaderUserCommissionRate.Value) / 100).ToThousandSeperatorWithCurrency())</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>Değer Bulunamadı</td>
+                                                        <td>Değer Bulunamadı</td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </table>
+
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <label class="control-label label-switch col-md-3">Finansal Onay</label>
+                                            <div class="col-md-2">
+                                                @Html.CheckBox("IsFinancialConfirmed", Model.Payment.IsFinancialConfirmed,
+                                                new
+                                                {
+                                                    @class = "make-switch",
+                                                    data_on_text = "&nbsp;Evet&nbsp;",
+                                                    data_off_text = "&nbsp;Hayır&nbsp;",
+                                                })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group form-md-line-input form-md-floating-label">
+                                            <textarea
+                                                name="Description"
+                                                id="financial_confirmation_description"
+                                                class="form-control"
+                                                maxlength="500"
+                                                rows="5"></textarea>
+                                            <label for="financial_confirmation_description">Açıklama (Opsiyonel)</label>
+                                            <span class="help-block">Maximum uzunluk: 500 karakter</span>
+                                        </div>
+                                    </div>
+                                
+                                    <p class="payment-financial-confirmed-true hidden">
+                                        <strong class="financial-confirmed-at"></strong> tarih ve saatinde finansal onay verilmiştir.
+                                    </p>
+                                }
+                                else if (Model.Payment.FinancialConfirmedAt.HasValue)
+                                {
+                                    <p class="payment-financial-confirmed-true">
+                                        <strong class="financial-confirmed-at">@Model.Payment.FinancialConfirmedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)</strong>
+                                        tarih ve saatinde finansal onay verilmiştir.
+                                    </p>
+                                }
+
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.OdemeTuruveBankaHesabiGuncelleme))
+        {
+            <div class="portlet blue-hoki box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-bank"></i>Ödeme Türü & Banka Hesabı
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-payment-type-and-bank-account')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdatePaymentTypeAndBankAccountAjax", "Payment",
+                        new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin =   "Payment.UpdatePaymentTypeAndBankAccountAjaxBegin",
+                            OnSuccess = "Payment.UpdatePaymentTypeAndBankAccountAjaxSuccess",
+                            OnFailure = "Payment.UpdatePaymentTypeAndBankAccountAjaxFailure"
+                        },
+                        new { id = "form-update-payment-type-and-bank-account" }))
+                        {
+                            <div class="form-body">
+                                <input type="hidden" name="ID" value="@Model.Payment.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                    <span class="text-gray">Ödeme Türü</span>
+                                    <select class="select2 form-control"
+                                        id="tk_payment_type"
+                                        name="TKPaymentType">
+                                        <option></option>
+
+                                        @foreach (var item in Model.TKPaymentTypeList)
+                                        {
+                                            <option 
+                                                @(item.Value == (int)Model.Payment.TKPaymentType ? "selected" : "") 
+                                                value="@item.Value">@item.Name</option>
+                                        }
+
+                                    </select>
+                                </div>
+
+                                <div id="tk-payment-type-transfer" style="@(Model.Payment.TKPaymentType != TK.TKPaymentType.Transfer ? "display: none;" : "")">
+                                    <div class="form-group form-md-line-input form-md-floating-label margin-bottom-zero">
+                                        <label class="col-md-3 label-switch">Hangi Banka Hesabı</label>
+                                        <div class="mt-radio-inline">
+                                            <label class="mt-radio">
+                                                <input type="radio"
+                                                    name="IsCompanyBankAccountReceiver"
+                                                    value="true"
+                                                    @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && Model.Payment.IsCompanyBankAccountReceiver.Value ? "checked" : "") />
+                                                RNP Reklam Ajans Banka Hesabı
+                                            <span></span>
+                                            </label>
+                                            <label class="mt-radio">
+                                                <input type="radio"
+                                                    name="IsCompanyBankAccountReceiver"
+                                                    value="false" 
+                                                    @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && !Model.Payment.IsCompanyBankAccountReceiver.Value ? "checked" : "") />
+                                                Kullanıcı Banka Hesabı
+                                            <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="is-company-bank-account-receiver-true" 
+                                        style="@(Model.Payment.IsCompanyBankAccountReceiver.HasValue && !Model.Payment.IsCompanyBankAccountReceiver.Value ? "display:none;" : "")">
+                                        <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                            <span class="text-gray">RNP Reklam Banka Hesapları</span>
+                                            <select class="select2 form-control"
+                                                id="bank_account_id"
+                                                name="BankAccountID"
+                                                @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && Model.Payment.IsCompanyBankAccountReceiver.Value ? "required" : "")>
+                                                <option></option>
+
+                                                @foreach (var item in Model.BankAccountList)
+                                                {
+                                                    <option 
+                                                        @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && 
+                                                        Model.Payment.IsCompanyBankAccountReceiver.Value && 
+                                                        Model.Payment.BankAccountID == item.ID ? "selected='selected'" : "")
+                                                        value="@item.ID">
+                                                        @(string.Format("{0}{1} - {2} <img class='img-responsive img-select2 pull-right' src='{3}/{4}'></span>", 
+                                                        (item.IsDeleted ? "(Silindi) " : ""),
+                                                        item.IBAN, item.Owner, CDNBaseURL, item.Bank.LogoURL))
+                                                    </option>
+                                                }
+
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div id="is-company-bank-account-receiver-false" 
+                                        style="@(Model.Payment.IsCompanyBankAccountReceiver.HasValue && Model.Payment.IsCompanyBankAccountReceiver.Value ? "display:none;" : "")">
+                                        <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                            <span class="text-gray">Kullanıcı Banka Hesapları</span>
+                                            <select class="select2 form-control"
+                                                id="user_bank_account_id"
+                                                name="UserBankAccountID"
+                                                @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && !Model.Payment.IsCompanyBankAccountReceiver.Value ? "required" : "")>
+                                                <option></option>
+
+                                                @foreach (var item in Model.UserBankAccountList)
+                                                {
+                                                    <option 
+                                                        @(Model.Payment.IsCompanyBankAccountReceiver.HasValue && 
+                                                        !Model.Payment.IsCompanyBankAccountReceiver.Value &&
+                                                        Model.Payment.UserBankAccountID == item.ID ? "selected='selected'" : "")
+                                                        value="@item.ID">
+                                                        @(string.Format("{0}{1} - {2} <img class='img-responsive img-select2 pull-right' src='{3}/{4}'></span>", 
+                                                        (item.IsDeleted ? "(Silindi) " : ""),
+                                                        item.IBAN, item.Owner, CDNBaseURL, item.BankLogoURL))
+                                                    </option>
+                                                }
+
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                
+                                
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                                                    
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.TutarGuncelleme))
+        {
+            <div class="portlet green-meadow box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-money"></i>Tutar
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-payment-price')">
+                            <i class="fa fa-save"></i>Kaydet</button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="form">
+                        @using (Ajax.BeginForm("UpdatePaymentPriceAjax", "Payment",
+                            new AjaxOptions()
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "Payment.UpdatePaymentPriceAjaxBegin",
+                            OnSuccess = "Payment.UpdatePaymentPriceAjaxSuccess",
+                            OnFailure = "Payment.UpdatePaymentPriceAjaxFailure"
+                        },
+                        new { id = "form-update-payment-price" }))
+                        {
+                            <div class="form-body">
+
+                                <input type="hidden" name="ID" value="@Model.Payment.ID">
+
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text" class="form-control" 
+                                        id="totalprice"
+                                        name="TotalPrice" value="@Model.Payment.TotalPrice.ToString("0.00")" required="required" />
+                                    <label for="totalprice">Toplam Tutar</label>
+                                </div>
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text" class="form-control" 
+                                        id="amountpaid"
+                                        name="AmountPaid" value="@Model.Payment.AmountPaid.ToString("0.00")" required="required" />
+                                    <label for="amountpaid">Ödenen Tutar</label>
+                                </div>
+                                <button class="hidden" type="submit"></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+<input type="hidden" id="IsLocal" value="@HttpContext.Current.Request.IsLocal" />

@@ -1,0 +1,19 @@
+﻿@using Sky.Common.DTO
+@using Sky.CMS.Services
+
+@model UI.Web.Models.User.UserModel
+
+<table class="table table-hover">
+
+    @foreach (var item in Model.TKLogList)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td class="col-md-1">
+                <a href="/Statistics/LogMonitor?TKLog=@(item.Value)&UserID=@Model.User.ID" 
+                    target="_blank" class="btn btn-sm default text-proper">Görüntüle</a>
+            </td>
+        </tr>
+    }
+
+</table>

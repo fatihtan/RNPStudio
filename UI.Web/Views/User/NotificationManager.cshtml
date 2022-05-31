@@ -1,0 +1,256 @@
+﻿@using Sky.Ramesses.DTO
+
+@model UI.Web.Models.User.UserNotificationManagerModel
+
+@{
+    ViewBag.Title = "Bildirim Yönetimi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section topCSS{
+    @Html.Partial("/Views/Shared/Partial/_FroalaCSS.cshtml")
+
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+}
+
+@section topJS{
+    @Html.Partial("/Views/Shared/Partial/_FroalaJS.cshtml")
+
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Bildirim Yönetimi</span>
+            </li>
+        </ul>
+    </div>
+    <h1 class="page-title"></h1>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="icon-bell font-green"></i>
+                        <span class="caption-subject bold uppercase">Bildirim Yönetimi</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    <div class="note hidden" id="notification-result">
+                        <h4 class="bold">Gönderim Raporu</h4>
+                        <table class="table table-hover table-bordered">
+                            <tr>
+                                <th class="col-md-3">Toplam Alıcı Sayısı</th>
+                                <td class="ReceiverCount"></td>
+                            </tr>
+                            <tr>
+                                <th>Başarılı Bildirim Gönderimleri Sayısı</th>
+                                <td class="SuccessfulSendingNotificationCount"></td>
+                            </tr>
+                            <tr>
+                                <th>Başarılı Email Gönderimleri Sayısı</th>
+                                <td class="SuccessfulSendingEmailCount"></td>
+                            </tr>
+                            <tr>
+                                <th>Başarılı SMS Gönderimleri Sayısı</th>
+                                <td class="SuccessfulSendingSmsCount"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    @using (Ajax.BeginForm("SendNotificationAjax", "User",
+                    new AjaxOptions()
+                    {
+                        HttpMethod = "POST",
+                        OnBegin =   "User.SendNotificationAjaxBegin",
+                        OnSuccess = "User.SendNotificationAjaxSuccess",
+                        OnFailure = "User.SendNotificationAjaxFailure"
+                    }, new
+                    {
+                        id = "form-send-notification"
+                    }))
+                    {
+                        <div class="form-body">
+
+                            <div class="form-group">
+                                <label>Alıcı Seçimi</label>
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio">
+                                        Kullanıcılar
+                                        <input type="radio" value="1" name="ReceiverType">
+                                        <span></span>
+                                    </label>
+                                    <label class="mt-radio">
+                                        Takımlar
+                                        <input type="radio" value="2" name="ReceiverType">
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="div-container-user-list" style="display: none;">
+                                <div class="form-group">
+                                    <div class="row select-deselect">
+                                        <div class="col-md-12" style="bottom: -24px;">
+                                            <div class="pull-right">
+                                                <a href="javascript:;" onclick="selectDeselect('#user_id', true)"><i class="fa fa-check"></i>&nbsp;Tümünü Seç</a>
+                                                <br />
+                                                <a href="javascript:;" onclick="selectDeselect('#user_id', false)"><i class="fa fa-remove"></i>&nbsp;Tümünü Kaldır</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label class="control-label">Kullanıcılar</label>
+                                    <select
+                                        class="select2 form-control"
+                                        id="user_id"
+                                        name="UserID"
+                                        multiple="multiple">
+
+                                        @foreach (var item in Model.UserList)
+                                        {
+                                            <option value="@item.ID">@(string.Format("{0} {1} - {2}", item.FirstName, item.LastName, item.Email))</option>
+                                        }
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="div-container-team-list" style="display: none;">
+                                <div class="form-group">
+                                    <div class="row select-deselect">
+                                        <div class="col-md-12" style="bottom: -24px;">
+                                            <div class="pull-right">
+                                                <a href="javascript:;" onclick="selectDeselect('#user_team_id', true)"><i class="fa fa-check"></i>&nbsp;Tümünü Seç</a>
+                                                <br />
+                                                <a href="javascript:;" onclick="selectDeselect('#user_team_id', false)"><i class="fa fa-remove"></i>&nbsp;Tümünü Kaldır</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <label class="control-label">Takımlar</label>
+                                    <select
+                                        class="select2 form-control"
+                                        id="user_team_id"
+                                        name="UserTeamID"
+                                        multiple="multiple">
+
+                                        @foreach (var item in Model.UserTeamList)
+                                        {
+                                            <option value="@item.ID">@item.Name</option>
+                                        }
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <input type="text"
+                                    class="form-control"
+                                    name="Title"
+                                    id="title"
+                                    autocomplete="off"
+                                    required="required"
+                                    maxlength="250" />
+                                <label for="title">Başlık</label>
+                                <span class="help-block">Maksimum 250 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <textarea
+                                    name="NotificationContent"
+                                    id="notification_content"
+                                    class="form-control"
+                                    rows="13"
+                                    maxlength="3000"
+                                    required="required"></textarea>
+                                <label for="notification_content">İçerik</label>
+                                <span class="help-block">Maksimum 3000 karakter</span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="mt-checkbox-list">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        Bildirim Gönder
+                                        @Html.CheckBox("SendNotification", true)
+                                        <span></span>
+                                    </label>
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        Email Gönder
+                                        @Html.CheckBox("SendEmail", false)
+                                        <span></span>
+                                    </label>
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                        Sms Gönder
+                                        @Html.CheckBox("SendSms", false)
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="form-actions noborder">
+                            <div class="col-md-3">
+                                <button type="submit" id="submit" class="btn btn-block blue">GÖNDER</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+
+    <script src="/assets/content/js/ajax/user.ajax.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#user_id, #user_team_id").select2({
+                allowClear: true,
+                placeholder: "Seçiniz",
+                closeOnSelect: false,
+                width: null
+            });
+        });
+
+        $('input[type=radio][name="ReceiverType"]').change(function () {
+            if (this.value == "1") {
+                $('#div-container-team-list').hide('slow');
+                $('#div-container-user-list').show('slow');
+            }
+            else if (this.value == "2") {
+                $('#div-container-user-list').hide('slow');
+                $('#div-container-team-list').show('slow');
+            }
+        });
+
+        function selectDeselect(targetSelector, state) {
+            setTimeout(function () {
+                var userOptions = $(targetSelector + ' option');
+                for (var i = 0; i < userOptions.length; i++) {
+                    var item = $(userOptions[i]);
+
+                    item.prop('selected', state).change();
+                }
+
+                global.hideLoader();
+            }, 50);
+
+            global.showLoader();
+        }
+
+    </script>
+}

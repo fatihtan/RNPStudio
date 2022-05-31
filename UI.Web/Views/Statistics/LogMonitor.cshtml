@@ -1,0 +1,200 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.Statistics.LogListModel
+
+@{
+    ViewBag.Title = "Log Monitor";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.tr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js"></script>
+
+    <script src="/assets/global/plugins/json-formatter/json-formatter.js"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>İstatistikler</span>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Log Monitor</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-line-chart font-green"></i>
+                        <span class="caption-subject bold uppercase">Log Monitor</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                                <label class="text-gray">Log Türü</label>
+                                <select class="select2 form-control"
+                                        id="tk_id"
+                                        name="ID"
+                                        required="required">
+                                    <option></option>
+
+                                    @foreach (var item in Model.TKLogList)
+                                    {
+                                        <option @(item.Value == Model.SelectedTKID ? "selected=\"selected\"" : "")
+                                                value="@item.Value">
+                                            @item.Name
+                                        </option>
+                                    }
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.IsTKSelected)
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="text-gray">Aramak istediğiniz tarih aralığını seçin</label>
+                                    <form action="/Statistics/LogMonitor" method="get">
+                                        
+                                        <input type="hidden" name="UserID" value="@Model.UserID" />
+                                        <input type="hidden" name="TKLog" value="@Model.SelectedTKID" />
+
+                                        <div id="picker" class="input-group input-large date-picker input-daterange">
+                                            <input 
+                                                type="text" 
+                                                class="form-control dt-picker"
+                                                value="@(Model.Start.HasValue ? Model.Start.Value.ToString("dd/MM/yyyy") : "")"
+                                                name="Start"
+                                                autocomplete="off" />
+                                            <span class="input-group-addon"> - </span>
+                                            <input 
+                                                type="text" 
+                                                class="form-control dt-picker" 
+                                                value="@(Model.End.HasValue ? Model.End.Value.ToString("dd/MM/yyyy") : "")" 
+                                                name="End" autocomplete="off" />
+                                            <div class="input-group-btn">
+                                                <button type="submit" class="btn btn-info">Ara</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        TK.TKLog TKLog = (TK.TKLog)Model.SelectedTKID;
+
+                        switch (TKLog)
+                        {
+                            case TK.TKLog.LogNavigation:
+                                @Html.Partial("/Views/Statistics/Partial/_LogNavigation.cshtml")
+                                break;
+                            case TK.TKLog.LogNavigationAdministrator:
+                                @Html.Partial("/Views/Statistics/Partial/_LogNavigationAdministrator.cshtml")
+                                break;
+                            case TK.TKLog.LogPostView:
+                                @Html.Partial("/Views/Statistics/Partial/_LogPostView.cshtml")
+                                break;
+                            case TK.TKLog.LogSearch:
+                                @Html.Partial("/Views/Statistics/Partial/_LogSearch.cshtml")
+                                break;
+                            case TK.TKLog.LogURLError:
+                                @Html.Partial("/Views/Statistics/Partial/_LogURLError.cshtml")
+                                break;
+                            case TK.TKLog.LogFileDownload:
+                                @Html.Partial("/Views/Statistics/Partial/_LogFileDownload.cshtml")
+                                break;
+                            case TK.TKLog.LogIyzicoCheckoutForm:
+                                @Html.Partial("/Views/Statistics/Partial/_LogIyzicoCheckoutForm.cshtml")
+                                break;
+                            case TK.TKLog.LogPayment:
+                                @Html.Partial("/Views/Statistics/Partial/_LogPayment.cshtml")
+                                break;
+                            case TK.TKLog.LogUserSession:
+                                @Html.Partial("/Views/Statistics/Partial/_LogUserSession.cshtml")
+                                break;
+                            case TK.TKLog.LogAdministratorSession:
+                                @Html.Partial("/Views/Statistics/Partial/_LogAdministratorSession.cshtml")
+                                break;
+                            case TK.TKLog.LogSparkJob:
+                                @Html.Partial("/Views/Statistics/Partial/_LogSparkJob.cshtml")
+                                break;
+                            case TK.TKLog.LogTransaction:
+                                @Html.Partial("/Views/Statistics/Partial/_LogTransaction.cshtml")
+                                break;
+                        }
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="IsTKSelected" value="@(Model.IsTKSelected ? 1 : 0)" />
+<input type="hidden" id="UserID" value="@Model.UserID" />
+
+@section bottomJS{
+    <script>
+        $(document).ready(function () {
+            $("#tk_id").select2({
+                allowClear: true,
+                placeholder: "Seçiniz",
+                width: null
+            });
+            $('#picker').datepicker({
+                format: "dd/mm/yyyy",
+                language: "tr",
+                orientation: 'bottom' 
+
+            });
+            $(".dt-picker").inputmask("d/m/y", {
+                autoUnmask: false
+            });
+
+            if ($('#IsTKSelected').val() == "1") {
+                datatableGenerator.normal('#item_list', parseInt($('#orderNum').val()));
+            }
+        });
+
+        $("#tk_id").on('change', function () {
+            var id = $(this).val();
+            var userID = $('#UserID').val();
+
+            var url = '/Statistics/LogMonitor?TKLog=' + id;
+            if (userID != '') {
+                url += '&UserID=' + userID;
+            }
+
+            window.location = url;
+        });
+    </script>
+
+}

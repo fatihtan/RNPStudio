@@ -1,0 +1,481 @@
+﻿@using Sky.Common.Extensions
+@using Sky.CMS.Services
+@using Sky.Common.DTO
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Raffle.RaffleParticipantModel
+
+@{
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+
+        <div class="portlet yellow-crusta box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-random"></i>Katılım Bilgileri
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Katılım No</div>
+                    <div class="col-md-7 value">
+                        @Model.RaffleParticipant.ID.ToString("00000")
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Liste Kodu</div>
+                    <div class="col-md-7 value raffle-participant-listcode">
+                        @Model.RaffleParticipant.GetListCode()
+                    </div>
+                </div>
+
+                @if (Model.RaffleParticipant.PaymentID.HasValue)
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Ödeme No</div>
+                        <div class="col-md-7 value">
+                            <a target="_blank" href="/Payment/Detail/@Model.RaffleParticipant.PaymentID.Value">@(Model.RaffleParticipant.PaymentID.Value.ToString("00000"))</a>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.RaffleParticipant.PreviousRaffleParticipantID.HasValue)
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Önceki Çekiliş Katılımı</div>
+                        <div class="col-md-7 value">
+                            <a target="_blank" href="/Raffle/ParticipantDetail/@Model.RaffleParticipant.PreviousRaffleParticipantID.Value">@(Model.RaffleParticipant.PreviousRaffleParticipantID.Value.ToString("00000"))</a>
+                        </div>
+                    </div>
+                }
+
+                <div class="row static-info">
+                    <div class="col-md-5 name">Katılım Türü</div>
+                    <div class="col-md-7 value raffle-participant-type">
+                        @(TypeService.GetNameByValue(Model.RaffleParticipant.TKRaffleParticipationType))
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Katılım Durumu</div>
+                    <div class="col-md-7 value raffle-participant-status">
+                        @(TypeService.GetNameByValue(Model.RaffleParticipant.TKRaffleParticipationStatus))
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Telafi Tanımlandı</div>
+                    <div class="col-md-7 value raffle-participant-ismakeupdefined">
+                        <span class="label label-sm label-@(Model.RaffleParticipant.IsMakeUpDefined ? "warning" : "info")">
+                            @(Model.RaffleParticipant.IsMakeUpDefined ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Onay Tarihi</div>
+                    <div class="col-md-7 value raffle-participant-confirmed-at">
+                        @(Model.RaffleParticipant.ConfirmedAt.HasValue ? Model.RaffleParticipant.ConfirmedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo) : "")
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">İşlem Onaylı</div>
+                    <div class="col-md-7 value raffle-participant-isconfirmed">
+                        <span class="label label-sm label-@(Model.RaffleParticipant.IsConfirmed ? "success" : "warning")">
+                            @(Model.RaffleParticipant.IsConfirmed ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Görünür</div>
+                    <div class="col-md-7 value raffle-participant-isshown">
+                        <span class="label label-sm label-@(Model.RaffleParticipant.IsShown ? "info" : "warning")">
+                            @(Model.RaffleParticipant.IsShown ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Durum</div>
+                    <div class="col-md-7 value raffle-participant-isactive">
+                        <span class="label label-sm label-@(Model.RaffleParticipant.IsActive ? "info" : "warning")">
+                            @(Model.RaffleParticipant.IsActive ? "AKTİF" : "PASİF")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Silindi</div>
+                    <div class="col-md-7 value raffle-participant-isdeleted">
+                        <span class="label label-sm label-@(Model.RaffleParticipant.IsDeleted ? "danger" : "info")">
+                            @(Model.RaffleParticipant.IsDeleted ? "Evet" : "Hayır")
+                        </span>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">IP Adres</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.IPAddress</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet green box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-layers"></i>Çekiliş Bilgileri
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Çekiliş No</div>
+                    <div class="col-md-7 value">
+                        <a href="/Raffle/Detail/@Model.RaffleParticipant.RaffleID">@Model.RaffleParticipant.Raffle.ID.ToString("00000")</a>
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Liste Kapasitesi</div>
+                    <div class="col-md-7 value">
+                        @Model.RaffleParticipant.Raffle.UserCountPerList
+                    </div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Başlangıç</div>
+                    <div class="col-md-7 value">
+                        @Model.RaffleParticipant.Raffle.RaffleStartedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                    </div>
+                </div>
+                @if (Model.RaffleParticipant.Raffle.RaffleEndedAt.HasValue)
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Bitiş</div>
+                        <div class="col-md-7 value">
+                            @Model.RaffleParticipant.Raffle.RaffleEndedAt.Value.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="portlet purple box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-layers"></i>Çekiliş Paketi
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Adı</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.Raffle.RaffleTemplate.Name</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Paket Fiyatı</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.Raffle.RaffleTemplate.Price.ToThousandSeperatorWithCurrency()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hedef Takipçi Sayısı</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.Raffle.RaffleTemplate.TargetFollowerCount</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hedef Takipçi Sayısı (Metadata)</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.TargetFollowerCount</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+
+        <div class="portlet blue box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-share"></i>Sosyal Medya Hesabı
+                </div>
+                <div class="actions">
+                    <a href="/Customer/SocialMediaAccountUpdate/@Model.RaffleParticipant.SocialMediaAccountID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Platform</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.SocialMediaAccount.TKSocialMediaPlatform.ToString()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hesap Adı</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.SocialMediaAccount.AccountName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Platform (Metadata)</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.TKSocialMediaPlatform.ToString()</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Hesap Adı (Metadata)</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.SocialMediaAccountName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">S.M Hesabı Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.RaffleParticipant.SocialMediaAccount.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet blue-hoki box">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-user"></i>Müşteri
+                </div>
+                <div class="actions">
+                    <a href="/Customer/Detail/@Model.Customer.ID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row static-info">
+                    <div class="col-md-5 name">Ad</div>
+                    <div class="col-md-7 value">@Model.Customer.FirstName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Soyad</div>
+                    <div class="col-md-7 value">@Model.Customer.LastName</div>
+                </div>
+                <div class="row static-info">
+                    <div class="col-md-5 name">Email</div>
+                    <div class="col-md-7 value">@Model.Customer.Email</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Customer.CountryPhoneCode))
+                {
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Telefon</div>
+                        <div class="col-md-7 value">@(string.Format("+{0} {1}", Model.Customer.CountryPhoneCode, Model.Customer.PhoneNumber))</div>
+                    </div>
+                }
+                <div class="row static-info">
+                    <div class="col-md-5 name">Kayıt Tarihi</div>
+                    <div class="col-md-7 value">@Model.Customer.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", Model.TurkishCultureInfo)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.RaffleParticipant.TKActor == TK.TKActor.User)
+        {
+            <div class="portlet red box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="icon-user"></i>Oluşturan Kullanıcı
+                    </div>
+                    <div class="actions">
+                        <a href="/User/Detail/@Model.User.ID" class="btn white btn-sm"><i class="fa fa-pencil"></i>Düzenle</a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Ad</div>
+                        <div class="col-md-7 value">@Model.User.FirstName</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Soyad</div>
+                        <div class="col-md-7 value">@Model.User.LastName</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Email</div>
+                        <div class="col-md-7 value">@Model.User.Email</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Telefon</div>
+                        <div class="col-md-7 value">@Model.User.PhoneNumber</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Kayıt Tarihi</div>
+                        <div class="col-md-7 value">@Model.User.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Komisyon Oranı</div>
+                        <div class="col-md-7 value">%@Model.User.CommissionRate</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Min Çekim Limiti</div>
+                        <div class="col-md-7 value">@Model.User.MinWithdraw.ToThousandSeperatorWithCurrency()</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.RaffleParticipant.TKActor == TK.TKActor.Administrator)
+        {
+            <div class="portlet blue box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-user-secret"></i>Oluşturan Yönetici
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Ad</div>
+                        <div class="col-md-7 value">@Model.Administrator.FirstName</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Soyad</div>
+                        <div class="col-md-7 value">@Model.Administrator.LastName</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Email</div>
+                        <div class="col-md-7 value">@Model.Administrator.Email</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Telefon</div>
+                        <div class="col-md-7 value">@Model.Administrator.PhoneNumber</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name">Kayıt Tarihi</div>
+                        <div class="col-md-7 value">@Model.Administrator.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.TakipciSayisiveEkranGoruntusuGuncelleme))
+    {
+        <div class="col-md-12 col-sm-12">
+            <div class="portlet yellow-haze box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-users"></i>Takipçi Sayısı & Ekran Görüntüsü
+                    </div>
+                    <div class="actions">
+                        <button class="btn white btn-sm" onclick="global.submitForm('#form-update-raffle-participant-follower-screen-shot');">
+                            <i class="fa fa-save"></i>Kaydet
+                        </button>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row">
+                        @using (Html.BeginForm("UpdateRaffleParticipantFollowerAndScreenShotAjax", "Raffle", FormMethod.Post, new { id = "form-update-raffle-participant-follower-screen-shot" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            string initialScreenShot = "/assets/content/img/noimage.png", eventualScreenShot = "/assets/content/img/noimage.png";
+                            string initialRequired = string.IsNullOrEmpty(Model.RaffleParticipant.InitialScreenShot) ? "required" : "";
+                            string eventualRequired = string.IsNullOrEmpty(Model.RaffleParticipant.EventualScreenShot) ? "required" : "";
+                        
+                            <input type="hidden" name="ID" value="@Model.RaffleParticipant.ID" />
+                        
+                            <div class="col-md-6 text-center">
+                                <p class="margin-top-20 margin-bottom-40">
+                                    <strong>Başlangıç Takipçi Sayısı</strong>
+                                    <br />
+                                    <input 
+                                    type="text" 
+                                    autocomplete="off"
+                                    class="form-control img-width-40 margin-auto margin-top-10 text-center" 
+                                    id="initial_follower_count" 
+                                    name="InitialFollowerCount"
+                                    value="@Model.RaffleParticipant.InitialFollowerCount"
+                                    required="required" />
+                                </p>
+
+                                @if (!string.IsNullOrEmpty(Model.RaffleParticipant.InitialScreenShot))
+                                {
+                                    initialScreenShot = string.Format("{0}/{1}", CDNBaseURL, Model.RaffleParticipant.InitialScreenShot);
+                                }
+
+                                <div class="form-group">
+                                    <div class="fileinput fileinput-new" data-provides="fileinput">
+                                        <div class="fileinput-new thumbnail" style="width: 300px;">
+                                            <a class="btn-show-image" data-title="Başlangıç Ekran Görüntüsü">
+                                                <img src="@initialScreenShot" class="img-responsive img-initial-screen-shot" />
+                                            </a>
+                                        </div>
+                                        <div class="fileinput-preview fileinput-exists thumbnail" style="max-width: 300px;"></div>
+                                        <div>
+                                            <span class="btn default btn-file">
+                                                <span class="fileinput-new">GÖZAT</span>
+                                                <span class="fileinput-exists">DEĞİŞTİR </span>
+                                                <input type="file" data-max-size="4000000" id="initial_screen_shot" name="InitialScreenShot" @initialRequired />
+                                            </span>
+                                            <a href="javascript:;" class="btn red fileinput-exists"
+                                                data-dismiss="fileinput">KALDIR </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        
+                            <div class="col-md-6 text-center">
+                                <p class="margin-top-20 margin-bottom-40">
+                                    <strong>Bitiş Takipçi Sayısı</strong>
+                                    <br />
+                                    <input 
+                                    type="text" 
+                                    autocomplete="off"
+                                    class="form-control img-width-40 margin-auto margin-top-10 text-center" 
+                                    id="eventual_follower_count" 
+                                    name="EventualFollowerCount"
+                                    value="@Model.RaffleParticipant.EventualFollowerCount"
+                                    required="required" />
+                                </p>
+
+
+                                @if (!string.IsNullOrEmpty(Model.RaffleParticipant.EventualScreenShot))
+                                {
+                                    eventualScreenShot = string.Format("{0}/{1}", CDNBaseURL, Model.RaffleParticipant.EventualScreenShot);
+                                }
+
+                                <div class="form-group">
+                                    <div class="fileinput fileinput-new" data-provides="fileinput">
+                                        <div class="fileinput-new thumbnail" style="width: 300px;">
+                                            <a class="btn-show-image" data-title="Bitiş Ekran Görüntüsü">
+                                                <img src="@eventualScreenShot" class="img-responsive img-eventual-screen-shot" />
+                                            </a>
+                                        </div>
+                                        <div class="fileinput-preview fileinput-exists thumbnail" style="max-width: 300px;"></div>
+                                        <div>
+                                            <span class="btn default btn-file">
+                                                <span class="fileinput-new">GÖZAT</span>
+                                                <span class="fileinput-exists">DEĞİŞTİR </span>
+                                                <input type="file" data-max-size="4000000" id="eventual_screen_shot" name="EventualScreenShot" @eventualRequired />
+                                            </span>
+                                            <a href="javascript:;" class="btn red fileinput-exists"
+                                                data-dismiss="fileinput">KALDIR </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <button class="hidden" type="submit"></button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="screen-shot-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="screen-shot-title"></h4>
+            </div>
+            <div class="modal-body">
+                <img id="screen-shot-img" class="img-responsive margin-auto" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn dark btn-outline" data-dismiss="modal">KAPAT</button>
+            </div>
+        </div>
+    </div>
+</div>

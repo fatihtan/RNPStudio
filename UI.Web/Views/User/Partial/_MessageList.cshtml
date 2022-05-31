@@ -1,0 +1,47 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+<table
+    class="table table-striped table-bordered table-hover table-checkable order-column"
+    id="table_message_list">
+    <thead>
+        <tr>
+            <th class="hidden">&nbsp;</th>
+            <th class="text-center">Platform</th>
+            <th class="text-center">Dil</th>
+            <th class="text-center">Okundu</th>
+            <th class="text-center">Silindi</th>
+            <th>IP Adres</th>
+            <th class="text-center">Tarih</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ContactMessageList)
+        {
+            <tr class="odd gradeX">
+                <td class="hidden">&nbsp;</td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.TKPlatform == TK.TKPlatform.Web ? "info" : "success")">@item.TKPlatform.ToString()</span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.TKLanguage == TK.TKLanguage.Turkish ? "success" : "warning")">@item.TKLanguage.ToString()</span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsRead ? "info" : "warning")">@(item.IsRead ? "EVET" : "HAYIR")</span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsDeleted ? "danger" : "info")">@(item.IsDeleted ? "EVET" : "HAYIR")</span>
+                </td>
+                <td>@item.IPAddress</td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                <td class="text-center">
+                    <a 
+                        target="_blank" 
+                        href="/Generic/ContactMessageDetail/@item.ID" 
+                        class="btn btn-sm btn-default text-proper">Oku</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

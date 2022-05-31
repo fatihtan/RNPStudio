@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>IbanNet</id>
+    <version>3.0.0</version>
+    <title>IbanNet</title>
+    <authors>Martijn Bodeman</authors>
+    <owners>Martijn Bodeman</owners>
+    <licenseUrl>https://www.nuget.org/packages/IbanNet/3.0.0/license</licenseUrl>
+    <projectUrl>https://github.com/skwasjer/IbanNet</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides an IBAN validator for verifying IBAN's.</description>
+    <summary />
+    <copyright>Copyright © 2019</copyright>
+    <tags>IBAN International Bank Account Number</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework="Unsupported0.0">
+        <dependency id="NETStandard.Library" version="1.6.1" />
+        <dependency id="System.ComponentModel.TypeConverter" version="4.1.0" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

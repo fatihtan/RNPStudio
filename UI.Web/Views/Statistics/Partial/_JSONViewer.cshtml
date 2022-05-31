@@ -1,0 +1,57 @@
+﻿<div class="modal fade" id="json-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title"></h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12" id="json-container">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn dark btn-outline" data-dismiss="modal">KAPAT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        $(document).on('click', '.browse-log', function () {
+            var id = $(this).data('id');
+
+            global.showLoader();
+            $.post('/Statistics/GetLogField', {
+                'ID': id,
+                'TableName': $('#TableName').val(),
+                'FieldName': $('#FieldName').val()
+            })
+                .success(function (result) {
+                    if (result.IsSuccess) {
+                        try {
+                            var formatter = new JSONFormatter(JSON.parse(result.Data), Infinity);
+                            $('#json-container').html(formatter.render());
+                        } catch (e) {
+                            $('#json-container').html(result.Data);
+                            alert('Veri JSON formatına dönüştürülemedi.');
+                        }
+                    }
+                    else {
+                        alert(result.Message);
+                    }
+                })
+                .always(function (result) {
+                    setTimeout(function () {
+                        global.hideLoader();
+                        $('#json-modal').modal('show');
+                    }, 250)
+                })
+        });
+    }
+</script>

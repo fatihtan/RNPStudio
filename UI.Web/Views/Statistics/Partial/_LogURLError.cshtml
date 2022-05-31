@@ -1,0 +1,43 @@
+﻿@using Sky.CMS.Services
+@using Sky.Log.DTO
+@model UI.Web.Models.Statistics.LogListModel
+@{
+    Layout = null;
+    ViewBag.Title = "URL Hatası";
+    List<LogURLError> LogList = ((List<BaseDTO>)Model.LogList).Cast<LogURLError>().ToList();
+    string UserFullName = Model.UserID.HasValue ? string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName) : null;
+}
+
+<table class="table table-striped table-bordered table-hover table-checkable order-column" id="item_list">
+    <thead>
+        <tr>
+            <th class="hidden"></th>
+            <th class="@(Model.UserID.HasValue ? "col-md-2" : "col-md-1")">Kullanıcı</th>
+            <th class="col-md-1 text-center">Website</th>
+            <th>URL</th>
+            <th class="col-md-1 text-center">IP Adres</th>
+            <th class="col-md-2 text-center">Tarih</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in LogList)
+        {
+            <tr class="odd gradeX object-item" data-id="" id="object_@item.ID">
+                <td class="hidden">&nbsp;</td>
+                <td>
+                    @(Model.UserID.HasValue ? UserFullName : item.UserFullName)
+                </td>
+                <td class="text-center">@WebsiteService.GetWebsiteNameByID(item.WebsiteID)</td>
+                <td>@item.URL</td>
+                <td class="text-center">@item.IPAddress</td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+            </tr>
+        }
+
+
+    </tbody>
+</table>
+<input type="hidden" id="orderNum" value="5" />
+
+

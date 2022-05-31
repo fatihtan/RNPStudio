@@ -1,0 +1,281 @@
+﻿.img-full-width {
+    width: 100%;
+}
+
+.img-width-40 {
+    width: 40% !important;
+}
+
+.font-weight-600 {
+    font-weight: 600 !important;
+}
+
+.text-proper {
+    text-transform: initial !important;
+}
+
+table.dataTable td.sorting_1, table.dataTable td.sorting_2, table.dataTable td.sorting_3, table.dataTable th.sorting_1, table.dataTable th.sorting_2, table.dataTable th.sorting_3 {
+    background: transparent !important;
+}
+
+table.dataTable .balance td.sorting_1,
+table.dataTable .balance td.sorting_2,
+table.dataTable .balance td.sorting_3,
+table.dataTable .balance th.sorting_1,
+table.dataTable .balance th.sorting_2,
+table.dataTable .balance th.sorting_3 {
+    background: transparent !important;
+}
+
+table.dataTable .deleted-item td.sorting_1,
+table.dataTable .deleted-item td.sorting_2,
+table.dataTable .deleted-item td.sorting_3,
+table.dataTable .deleted-item th.sorting_1,
+table.dataTable .deleted-item th.sorting_2,
+table.dataTable .deleted-item th.sorting_3 {
+    background: transparent !important;
+}
+
+table.dataTable .unread td.sorting_1,
+table.dataTable .unread td.sorting_2,
+table.dataTable .unread td.sorting_3,
+table.dataTable .unread th.sorting_1,
+table.dataTable .unread th.sorting_2,
+table.dataTable .unread th.sorting_3 {
+    background: transparent !important;
+}
+
+.text-gray {
+    color: #888;
+}
+
+.padding-top-zero {
+    padding-top: 0px !important;
+}
+
+.padding-bottom-zero {
+    padding-bottom: 0px !important;
+}
+
+.margin-top-zero {
+    margin-top: 0px !important;
+}
+
+.margin-bottom-zero {
+    margin-bottom: 0px !important;
+}
+
+.label-switch {
+    padding-left: 0px;
+    margin: 5px 0px !important;
+    color: #888;
+}
+
+
+#table_payment_list.dataTable > tbody > tr.child span.dtr-title {
+    min-width: 215px;
+}
+
+#table_user_balance_list.dataTable > tbody > tr.child span.dtr-title {
+    min-width: 215px;
+}
+
+#table_company_balance_list.dataTable > tbody > tr.child span.dtr-title {
+    min-width: 215px;
+}
+
+.deleted-item {
+    background-color: #ff9c9c !important;
+}
+
+.unread {
+    background-color: #eef1f5 !important;
+}
+
+.wrap-line {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#contact_message_list .btn {
+    margin-right: 5px !important;
+}
+
+.message-content {
+    padding: 30px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.remove-btn {
+    position: absolute;
+    bottom: 25px;
+    right: 22px;
+}
+
+.note-height {
+    width: 100%;
+    height: 36px;
+}
+
+.word-break {
+    word-break: break-all;
+}
+
+.display-block {
+    display: block;
+}
+
+.fewer-balance {
+    background-color: #ff9c9c !important;
+}
+
+.higher-balance {
+    background-color: #7cf39c !important;
+}
+
+.activity-log-container {
+    height: 450px;
+}
+
+.portlet-fullscreen .activity-log-container {
+    height: initial;
+}
+
+.cursor-not-allowed {
+    cursor: not-allowed !important;
+}
+
+.description-field {
+    margin-top: 15px;
+    padding: 15px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.margin-zero {
+    margin: 0px !important;
+}
+
+.padding-zero {
+    padding: 0px !important;
+}
+
+.absolute-td {
+    position: relative;
+}
+
+.absolute-td-green {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    color: green;
+}
+
+.absolute-td-red {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    color: red;
+}
+
+.absolute-td-social {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+}
+
+
+.vertical-middle {
+    vertical-align: middle !important;
+}
+
+.page-404 .number {
+    top: initial !important;
+}
+
+.user-balance-bg1 {
+    background-color: #d8d8d8 !important;
+}
+
+.user-balance-bg2 {
+    background-color: #b6f9ff !important;
+}
+
+.word-wrap-break {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#select2-bank_account_id-results .select2-results__option[aria-selected],
+#select2-user_bank_account_id-results .select2-results__option[aria-selected],
+#select2-bank_id-results .select2-results__option[aria-selected] {
+    position: relative;
+}
+
+#select2-bank_account_id-results img,
+#select2-user_bank_account_id-results img,
+#select2-bank_id-results img {
+    height: 31px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+.img-select2 {
+    height: 31px;
+    position: absolute;
+    right: 60px;
+    top: 1px;
+}
+
+.margin-auto {
+    margin: auto;
+}
+
+.portlet.calendar.light .fc-button {
+    top: -63px !important;
+}
+
+.display-inline-block {
+    display: inline-block !important;
+}
+
+.margin-left-20 {
+    margin-left: 20px;
+}
+
+.margin-left-10 {
+    margin-left: 10px;
+}
+
+.btn-left-menu {
+    position: absolute !important;
+    right: 17px;
+}
+
+.initial-float {
+    float: initial !important;
+}
+
+.width-30 {
+    width:30px !important;
+}
+
+.bg-color-grey {
+    background-color:#e2e2e2;
+}
+
+.bg-color-green {
+    background-color:#b4ffc5;
+}
+
+.dt-buttons {
+    position:initial !important;
+    margin-top:initial !important;
+    margin-bottom:20px;
+}
+
+.img-flag {
+    width: 30px;
+}

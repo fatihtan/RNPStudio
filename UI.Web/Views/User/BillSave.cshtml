@@ -1,0 +1,626 @@
+﻿@model UI.Web.Models.User.UserBillModel
+
+@{
+    string PageTitle =
+        Model.IsUserIDSupplied ?
+        string.Format("{0} {1} - Yeni Fatura Ekle", Model.User.FirstName, Model.User.LastName) :
+        "Yeni Fatura Ekle";
+
+    ViewBag.Title = PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <link href="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.tr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-form/jquery.form.js"></script>
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/User/BillList">Faturalar</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            @if (Model.IsUserIDSupplied)
+            {
+                <li>
+                    <a href="/User/Detail/@Model.User.ID#user_bill">@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)</a>
+                    <i class="fa fa-circle"></i>
+                </li>
+            }
+            <li>
+                <span>Yeni Fatura Ekle</span>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="page-title"></h3>
+
+    <div class="row">
+        @if (!Model.IsUserIDSupplied)
+        {
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <span class="label label-danger">UYARI:</span> Ekleyeceğiniz fatura bir kullanıcıya atanmayacaktır.
+                </div>
+            </div>
+        }
+
+        <div class="col-md-12">
+            <!-- BEGIN EXAMPLE TABLE PORTLET-->
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-save font-green"></i>
+                        <span class="caption-subject bold uppercase">@PageTitle</span>
+                    </div>
+                    <div class="actions">
+                        <a class="btn blue" onclick="global.submitForm('#form-save-user-bill-ajax')">
+                            <i class="fa fa-save"></i>Kaydet</a>
+                    </div>
+                </div>
+                <div class="row">
+                    @using (Html.BeginForm("BillSaveAjax", "User", FormMethod.Post, new { id = "form-save-user-bill-ajax" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="col-md-6 col-sm-12">
+                            <div class="portlet green box">
+                                <div class="portlet-title">
+                                    <div class="caption">
+                                        <i class="fa fa-bolt"></i>Çekirdek Bilgiler
+                                    </div>
+                                </div>
+                                <div class="portlet-body">
+                                    <div class="form">
+                                        <div class="form-body">
+
+                                            @if (Model.IsUserIDSupplied)
+                                            {
+                                                <input type="hidden" name="UserID" value="@Model.User.ID">
+                                            }
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <input type="text"
+                                                    class="form-control "
+                                                    name="BillNo"
+                                                    id="billno"
+                                                    maxlength="50"
+                                                    required="required" />
+                                                <label for="billno">Fatura Numarası</label>
+                                                <span class="help-block">Maksimum 50 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input ">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    id="stringeditedat"
+                                                    name="StringEditedAt"
+                                                    required="required" />
+                                                <label for="stringexpiredat">Fatura Düzenlenme Tarihi</label>
+                                                <span class="help-block">Varsayılan olarak sipariş üzerinde fatura düzenleme işleminin tarihini alır.</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <label class="control-label label-switch col-md-3">Durum</label>
+                                                <div class="col-md-2">
+                                                    @Html.CheckBox("IsActive", true,
+                                                    new
+                                                    {
+                                                        @class = "make-switch",
+                                                        data_on_text = "&nbsp;Aktif&nbsp;",
+                                                        data_off_text = "&nbsp;Pasif&nbsp;"
+                                                    })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <label class="control-label label-switch col-md-3">Silindi</label>
+                                                <div class="col-md-2">
+                                                    @Html.CheckBox("IsDeleted", true,
+                                                    new
+                                                    {
+                                                        @class = "make-switch",
+                                                        data_on_text = "&nbsp;Hayır&nbsp;",
+                                                        data_off_text = "&nbsp;Evet&nbsp;"
+                                                    })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="portlet green box">
+                                <div class="portlet-title">
+                                    <div class="caption">
+                                        <i class="fa fa-file"></i>Dosya
+                                    </div>
+                                </div>
+                                <div class="portlet-body">
+                                    <div class="form">
+                                        <div class="form-body">
+                                            <div class="form-group ">
+                                                <div class="form-md-floating-label">
+                                                    <label class="control-label label-switch col-md-3">Dosya Seç</label>
+                                                    <div class="fileinput fileinput-new" data-provides="fileinput">
+                                                        <div class="input-group input-large">
+                                                            <div class="form-control uneditable-input input-fixed input-medium"
+                                                                data-trigger="fileinput">
+                                                                <i class="fa fa-file fileinput-exists"></i>&nbsp;
+                                                                <span class="fileinput-filename"></span>
+                                                            </div>
+                                                            <span class="input-group-addon btn default btn-file">
+                                                                <span class="fileinput-new">DOSYA SEÇ</span>
+                                                                <span class="fileinput-exists">DEĞİŞTİR</span>
+                                                                <input type="file" id="url" name="URL" required="required" />
+                                                            </span>
+                                                            <a href="javascript:;"
+                                                                class="input-group-addon btn red fileinput-exists"
+                                                                data-dismiss="fileinput">KALDIR</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="portlet green box">
+                                <div class="portlet-title">
+                                    <div class="caption">
+                                        <i class="fa fa-money"></i>Fiyat Bilgileri
+                                    </div>
+                                </div>
+                                <div class="portlet-body">
+                                    <div class="form">
+                                        <div class="form-body">
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <input type="text"
+                                                    class="form-control"
+                                                    id="subtotalprice"
+                                                    name="SubTotalPrice"
+                                                    required="required" />
+                                                <label for="totalprice">Alt Toplam (KDV Hariç)</label>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <input type="text"
+                                                    class="form-control"
+                                                    id="vatprice"
+                                                    name="VATPrice"
+                                                    required="required" />
+                                                <label for="totalprice">KDV</label>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <input type="text" class="form-control"
+                                                    id="totalprice"
+                                                    name="TotalPrice"
+                                                    required="required" />
+                                                <label for="totalprice">Genel Toplam (KDV Dahil)</label>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-sm-12">
+                            <div class="portlet green box">
+                                <div class="portlet-title">
+                                    <div class="caption">
+                                        <i class="fa fa-sticky-note"></i>Fatura Bilgileri
+                                    </div>
+                                    @if (Model.UserBillInfoList.Any())
+                                    {
+                                        <div class="actions">
+                                            <a href="#get-user-bill-info-modal" data-toggle="modal" class="btn white btn-sm">
+                                                <i class="fa fa-paw"></i>Getir
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="portlet-body">
+                                    <div class="form">
+                                        <div class="form-body">
+                                            <div class="form-group form-md-line-input form-md-floating-label ">
+                                                <label class="control-label col-md-3 label-switch">
+                                                    Fatura Tipi
+                                                </label>
+                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper active">
+                                                        <input
+                                                            type="radio"
+                                                            value="false"
+                                                            id="billiscorporate_false"
+                                                            name="BillIsCorporate"
+                                                            checked="checked" />
+                                                        Bireysel
+                                                    </label>
+                                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper">
+                                                        <input
+                                                            type="radio"
+                                                            value="true"
+                                                            id="billiscorporate_true"
+                                                            name="BillIsCorporate" />
+                                                        Kurumsal
+                                                    </label>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label personal">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    autocomplete="off"
+                                                    name="BillFullName"
+                                                    id="billfullname"
+                                                    maxlength="100" />
+                                                <label for="billfullname">Ad Soyad</label>
+                                                <span class="help-block">Maksimum 100 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    autocomplete="off"
+                                                    name="BillCompanyTitle"
+                                                    id="billcompanytitle"
+                                                    maxlength="500" />
+                                                <label for="billcompanytitle">Şirket Ünvanı</label>
+                                                <span class="help-block">Maksimum 500 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label personal">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    autocomplete="off"
+                                                    id="billcitizenidentityno"
+                                                    name="BillCitizenIdentityNo"
+                                                    maxlength="15" />
+                                                <label for="billcitizenidentityno">TC Kimlik No</label>
+                                                <span class="help-block">Maksimum 15 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    autocomplete="off"
+                                                    id="billtaxno"
+                                                    name="BillTaxNo"
+                                                    maxlength="15" />
+                                                <label for="billtaxno">Vergi Kimlik No</label>
+                                                <span class="help-block">Maksimum 15 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    autocomplete="off"
+                                                    id="billtaxoffice"
+                                                    name="BillTaxOffice"
+                                                    maxlength="50" />
+                                                <label for="billtaxoffice">Vergi Dairesi</label>
+                                                <span class="help-block">Maksimum 50 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <input
+                                                    type="text"
+                                                    class="form-control "
+                                                    autocomplete="off"
+                                                    id="billphonenumber"
+                                                    name="BillPhoneNumber"
+                                                    maxlength="50" />
+                                                <label for="billphonenumber">Telefon Numarası</label>
+                                                <span class="help-block">Maksimum 50 karakter</span>
+                                            </div>
+
+                                            <div class="form-group form-md-line-input form-md-floating-label">
+                                                <textarea
+                                                    class="form-control"
+                                                    name="BillFullAddress"
+                                                    id="billfulladdress"
+                                                    maxlength="500"
+                                                    rows="3"></textarea>
+                                                <label for="billfulladdress">Fatura Adresi</label>
+                                                <span class="help-block">Maksimum 500 karakter</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="hidden" type="submit"></button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="get-user-bill-info-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Fatura Bilgilerini Doldur</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                    <span class="text-gray">Fatura Bilgisi</span>
+                    <select class="select2 form-control"
+                        id="userbillinfo_id">
+                        <option></option>
+
+                        @{
+                            string corporate = "<span class=\"label label-sm label-info pull-right\">KURUMSAL</span>";
+                            string personal = "<span class=\"label label-sm label-success pull-right\">BİREYSEL</span>";
+                            System.Web.Script.Serialization.JavaScriptSerializer jss =
+                                new System.Web.Script.Serialization.JavaScriptSerializer();
+                        }
+
+                        @foreach (var item in Model.UserBillInfoList)
+                        {
+                            <option 
+                                data-item="@jss.Serialize(item)"
+                                value="@item.ID">
+                                @(item.IsCorporate ?
+                                string.Format("{0} {1}", corporate, item.CompanyTitle) :
+                                string.Format("{0} {1}", personal, item.FullName))
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                <button type="button" onclick="FillUserOrderBillInfo()" class="btn green">DOLDUR</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="IsLocal" value="@HttpContext.Current.Request.IsLocal" />
+
+@section bottomJS{
+    <script>
+        $(document).ready(function () {
+
+            $("#userbillinfo_id").select2({
+                placeholder: "Seçiniz",
+                width: null,
+                allowClear: true,
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+
+            $("#subtotalprice, #vatprice, #totalprice").inputmask({
+                'alias': 'decimal',
+                rightAlign: false,
+                showMaskOnHover: false,
+                'autoGroup': false,
+                'digits': 2,
+                'digitsOptional': false,
+                'placeholder': '0,00',
+                autoGroup: true,
+                allowMinus: false,
+                radixPoint: $('#IsLocal').val() == '' ? "," : "."
+            });
+
+            $('#stringeditedat').datepicker({
+                autoclose: true,
+                language: 'tr',
+                format: 'dd/mm/yyyy'
+            })
+
+            $("#stringeditedat").inputmask("d/m/y", {
+                autoUnmask: false
+            });
+
+            $('input[type=radio][name="BillIsCorporate"]:checked').trigger('change');
+        });
+
+        $('input[type=radio][name="BillIsCorporate"]').change(function () {
+            if (this.value == "true") {
+                $('.personal').hide();
+                $('.company').show();
+            }
+            else if (this.value == "false") {
+                $('.company').hide();
+                $('.personal').show();
+            }
+        })
+
+        function FillUserOrderBillInfo() {
+            var userBillInfoID = $('#userbillinfo_id').val();
+
+            if (userBillInfoID == '') {
+                $('#userbillinfo_id').select2('open');
+                toastr.warning('Fatura bilgisi seçiniz.');
+                return;
+            }
+
+            var item = $('#userbillinfo_id option:selected').data('item');
+            if (item.IsCorporate) {
+                $('#billiscorporate_true').click();
+                $('#billcompanytitle').val(item.CompanyTitle).focus();
+                $('#billtaxno').val(item.TaxNo).focus();
+                $('#billtaxoffice').val(item.TaxOffice).focus();
+
+                $('#billfullname').val('');
+                $('#billcitizenidentityno').val('');
+            }
+            else {
+                $('#billiscorporate_false').click().focus();
+                $('#billfullname').val(item.FullName).focus();
+                $('#billcitizenidentityno').val(item.CitizenIdentityNo).focus();
+
+                $('#billcompanytitle').val('');
+                $('#billtaxno').val('');
+                $('#billtaxoffice').val('');
+            }
+
+            $('#billfulladdress').val(item.FullAddress).focus();
+            $('#billphonenumber').val(item.PhoneNumber).focus();
+
+            $('#get-user-bill-info-modal').modal('hide');
+
+            toastr.info('Fatura bilgileri dolduruldu');
+        }
+
+        $('#form-save-user-bill-ajax').ajaxForm({
+            beforeSend: function (e) {
+                if (!controlUserBill()) {
+                    e.abort();
+                    return false;
+                }
+                global.showLoader();
+            },
+            complete: function (result) {
+                global.hideLoader();
+
+                result = result.responseJSON;
+
+                if (result != undefined) {
+                    if (result.IsSuccess) {
+                        toastr.success(result.Message);
+
+
+                    }
+                    else {
+                        toastr.error(result.Message)
+                    }
+                }
+                else {
+                    toastr.error('Internal Server Error');
+                }
+            }
+        });
+
+        function controlUserBill() {
+
+            if ($('#billno').val() == '') {
+                toastr.warning("Fatura no giriniz");
+                $('#billno').focus();
+                return false;
+            }
+
+            if ($('#stringeditedat').val() == '') {
+                toastr.warning("Fatura düzenlenme tarihini giriniz");
+                $('#stringeditedat').focus();
+                return false;
+            }
+
+            var fileInput = document.getElementById('url');
+            if (!fileInput.files.length) {
+                toastr.warning("Dosya bulunamadı. Lütfen dosya seçerek yeniden deneyiniz.");
+                return false;
+            }
+            else if (!fileInput.files) {
+                toastr.warning("Tarayıcınız dosya yükleme özelliğini desteklemiyor.");
+                return false;
+            }
+            else if (!fileInput.files[0]) {
+                toastr.warning("Dosya bulunamadı. Lütfen sayfayı yenileyip yeniden deneyiniz.");
+                return false;
+            }
+            else {
+                var file = fileInput.files[0];
+                if (file.size > 4194304) {
+                    toastr.warning("Yükleyeceğiniz dosya maksimum 4 mb olabilir.");
+                    return false;
+                }
+            }
+
+            if ($('#subtotalprice').val() == '') {
+                toastr.warning("Alt toplam tutarı giriniz")
+                return false;
+            }
+
+            if ($('#vatprice').val() == '') {
+                toastr.warning("KDV tutarını giriniz")
+                return false;
+            }
+
+            if ($('#totalprice').val() == '') {
+                toastr.warning("Toplam tutarı giriniz")
+                return false;
+            }
+
+            var isCorporate = $('input[type=radio][name="BillIsCorporate"]:checked').val();
+
+            if (isCorporate == "true") {
+                if ($('#billcompanytitle').val() == "") {
+                    toastr.warning("Şirket ünvanını giriniz");
+                    $('#billcompanytitle').focus();
+                    return false;
+                }
+
+                if ($('#billtaxno').val() == "") {
+                    toastr.warning("Vergi numarasını giriniz");
+                    $('#billtaxno').focus();
+                    return false;
+                }
+
+                if ($('#billtaxoffice').val() == "") {
+                    toastr.warning("Vergi dairesini giriniz");
+                    $('#billtaxoffice').focus();
+                    return false;
+                }
+            }
+            else {
+                if ($('#billfullname').val() == "") {
+                    toastr.warning("Ad Soyad giriniz");
+                    $('#billfullname').focus();
+                    return false;
+                }
+            }
+
+            if ($('#billfulladdress').val() == "") {
+                toastr.warning("Fatura adresini giriniz");
+                $('#billfulladdress').focus();
+                return false;
+            }
+
+            global.showLoader();
+            return true;
+        }
+    </script>
+}

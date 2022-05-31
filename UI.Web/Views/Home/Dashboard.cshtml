@@ -1,0 +1,344 @@
+﻿@using Sky.Common.DTO
+@using Sky.Common.Extensions
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Home.HomeListModel
+@{
+    ViewBag.Title = "RNP Reklam | Studio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+@section topJS{
+    <script src="/assets/global/plugins/counterup/jquery.waypoints.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/counterup/jquery.counterup.js" type="text/javascript"></script>
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <span>Anasayfa</span>
+            </li>
+        </ul>
+    </div>
+    <h1 class="page-title"></h1>
+    <div class="row">
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartKullanicilar))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 blue" href="/User/List">
+                    <div class="visual">
+                        <i class="icon-users"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalUserCount">0</span>
+                        </div>
+                        <div class="desc">Kullanıcılar</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartMusteriler))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 blue-ebonyclay" href="/Customer/List">
+                    <div class="visual">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalCustomerCount">0</span>
+                        </div>
+                        <div class="desc">Müşteriler</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartOdemeler))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 green" href="/Payment/List">
+                    <div class="visual">
+                        <i class="fa fa-shopping-cart"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalPaymentCount">0</span>
+                        </div>
+                        <div class="desc">Ödemeler</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartToplamKullaniciBakiyesi))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 yellow-haze" href="/User/BalanceListNotZero">
+                    <div class="visual">
+                        <i class="icon-wallet"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalCustomerCurrentBalance.ToThousandSeperator()">0</span>
+                        </div>
+                        <div class="desc">Toplam Kullanıcı Bakiyesi</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartTumCekilisKatilimlari))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 red" href="/Raffle/ParticipantList">
+                    <div class="visual">
+                        <i class="fa fa-random"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalRaffleParticipantCount">0</span>
+                        </div>
+                        <div class="desc">Tüm Çekiliş Katılımları</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartOnayBekleyenCekilisKatilimlari))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 yellow-crusta" href="/Raffle/ParticipantList?TKRaffleParticipationStatus=PendingConfirm">
+                    <div class="visual">
+                        <i class="fa fa-random"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.PendingRaffleParticipantCount">0</span>
+                        </div>
+                        <div class="desc">Onay Bekleyen Çekiliş Katılımları</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartYayindakiCekilisler))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 grey-gallery" href="/Raffle/List?TKRaffleStatus=PendingParticipant">
+                    <div class="visual">
+                        <i class="fa fa-random"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.TotalRaffleCount">0</span>
+                        </div>
+                        <div class="desc">Yayındaki Çekilişler</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartMesajlar))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 purple" href="/Generic/ContactMessageList">
+                    <div class="visual">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.ContactMessageCount">0</span>
+                        </div>
+                        <div class="desc">Mesajlar</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartNavigasyonZiyaretleri))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 grey-mint" href="/Statistics/LogMonitor?TKLog=@((int)TK.TKLog.LogNavigation)">
+                    <div class="visual">
+                        <i class="fa fa-pie-chart"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.LogNavigationCount">0</span>
+                        </div>
+                        <div class="desc">Navigasyon Ziyaretleri</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartAdministratorNavigasyonZiyaretleri))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 green" href="/Statistics/LogMonitor?TKLog=@((int)TK.TKLog.LogNavigationAdministrator)">
+                    <div class="visual">
+                        <i class="fa fa-pie-chart"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.LogNavigationAdministratorCount">0</span>
+                        </div>
+                        <div class="desc">Administrator Navigasyon Ziyaretleri</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartKullaniciOturumlari))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 grey-silver" href="/Statistics/LogMonitor?TKLog=@((int)TK.TKLog.LogUserSession)">
+                    <div class="visual">
+                        <i class="fa fa-pie-chart"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.LogUserSessionCount">0</span>
+                        </div>
+                        <div class="desc">Kullanıcı Oturumları</div>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.KartURLHatasi))
+        {
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a class="dashboard-stat dashboard-stat-v2 green-dark" href="/Statistics/LogMonitor?TKLog=@((int)TK.TKLog.LogURLError)">
+                    <div class="visual">
+                        <i class="fa fa-pie-chart"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="@Model.LogURLErrorCount">0</span>
+                        </div>
+                        <div class="desc">URL Hatası</div>
+                    </div>
+                </a>
+            </div>
+        }
+        
+    </div>
+
+    <div class="row">
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ActivityLogSol))
+        {
+            <div class="col-lg-6 col-xs-12 col-sm-12">
+                <div class="portlet light bordered">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="icon-share font-dark hide"></i>
+                            <span class="caption-subject font-dark">Kullanıcı & Müşteri & Ödeme & Ödeme Bildirimi</span>
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="fullscreen" data-original-title="" title=""></a>
+                        </div>
+                    </div>
+                    <div class="portlet-body">
+                        <div class="scroller" style="height: 450px;" data-always-visible="1" data-rail-visible="0">
+                            <ul class="feeds">
+
+                                @foreach (var item in Model.ActivityLogListForLeft)
+                                {
+                                    <li>
+                                        <div class="col1">
+                                            <div class="cont">
+                                                <div class="cont-col1">
+                                                    <div class="label label-sm label-@item.IconColor">
+                                                        <i class="@item.Icon"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="cont-col2">
+                                                    <div class="desc">
+                                                        @if (item.HasHyperLink)
+                                                        {
+                                                            <a href="@item.HyperLink">@item.Text</a>
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.HyperLink
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col2">
+                                            <div class="date">@item.DateTimeText</div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ActivityLogSag))
+        {
+            <div class="col-lg-6 col-xs-12 col-sm-12">
+                <div class="portlet light bordered">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="icon-share font-dark hide"></i>
+                            <span class="caption-subject font-dark">Navigasyon Ziyaretleri & Oturumlar</span>
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="fullscreen" data-original-title="" title=""></a>
+                        </div>
+                    </div>
+                    <div class="portlet-body">
+                        <div class="scroller activity-log-container" data-always-visible="1" data-rail-visible="0">
+                            <ul class="feeds">
+
+                                @foreach (var item in Model.ActivityLogListForRight)
+                                {
+                                    <li>
+                                        <div class="col1">
+                                            <div class="cont">
+                                                <div class="cont-col1">
+                                                    <div class="label label-sm label-@item.IconColor">
+                                                        <i class="@item.Icon"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="cont-col2">
+                                                    <div class="desc">
+                                                        @if (item.HasHyperLink)
+                                                        {
+                                                            <a target="_blank" href="@item.HyperLink">@item.Text</a>
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.Text
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col2">
+                                            <div class="date">@item.DateTimeText</div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        
+    </div>
+</div>

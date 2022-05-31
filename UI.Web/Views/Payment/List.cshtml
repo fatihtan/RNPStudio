@@ -1,0 +1,302 @@
+﻿@using Sky.CMS.Services
+@using Sky.Common.DTO
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Payment.PaymentListModel
+
+@{
+    ViewBag.Title = "Ödemeler";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    TK.TKPaymentStatus[] grnTKPaymentStatusList = { TK.TKPaymentStatus.PaymentNotified, TK.TKPaymentStatus.PaymentInProgress };
+    TK.TKPaymentStatus[] redTKPaymentStatusList = { TK.TKPaymentStatus.PaymentFailed, TK.TKPaymentStatus.PaymentNotCompleted, TK.TKPaymentStatus.PaymentCanceledByAdmin, TK.TKPaymentStatus.PaymentCanceledByUser, TK.TKPaymentStatus.PaymentDeleted };
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/Home/Dashboard">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>Ödemeler</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green-turquoise">
+                        <i class="fa fa-shopping-cart font-green-turquoise"></i>
+                        <span class="caption-subject bold uppercase">Ödemeler
+                            <small>(@(string.Format("{0} Ödeme Listeleniyor", Model.PaymentList.Count)))</small>
+                        </span>
+                    </div>
+                    <div class="pull-right margin-left-20">
+                        <form method="get">
+                            <input
+                                type="text"
+                                name="Limit"
+                                id="limit"
+                                required="required"
+                                value="@Model.Limit"
+                                autocomplete="off" placeholder="Limit" class="form-control input-inline">
+                            <button type="submit" class="btn btn-outline green"><i class="fa fa-search"></i></button>
+                        </form>
+                    </div>
+
+                    <div class="pull-right">
+                        <form method="get">
+                            <input
+                                type="text"
+                                name="q"
+                                id="search_query"
+                                required="required"
+                                value="@Model.Query"
+                                autocomplete="off" placeholder="Ödeme No" class="form-control input-inline">
+                            <button type="submit" class="btn green">Ara</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="portlet-body form">
+
+                    <table class="table table-striped table-bordered table-hover table-checkable order-column" id="item_list">
+                        <thead>
+                            <tr>
+                                <th class="hidden"></th>
+                                <th class="col-md-1">No</th>
+                                <th>Müşteri</th>
+                                <th class="text-center">Toplam Tutar</th>
+                                <th class="text-center">Ödenen Tutar</th>
+                                <th class="text-center">Fin. Onaylı</th>
+                                <th class="col-md-1 text-center">Durum</th>
+                                <th>Son Hareket</th>
+                                <th class="text-center">Tarih</th>
+                                <th class="col-md-1">&nbsp;</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.PaymentList)
+                            {
+                                <tr class="odd gradeX object-item" data-id="@item.ID" id="object_@item.ID">
+                                    <td class="hidden">&nbsp;</td>
+                                    <td>@item.ID</td>
+                                    <td><a href="/Customer/Detail/@item.CustomerID">@(string.Format("{0} {1}", item.Customer.FirstName, item.Customer.LastName))</a></td>
+                                    <td class="text-center">@item.TotalPrice.ToString("0.00 TL")</td>
+                                    <td class="text-center">@item.AmountPaid.ToString("0.00 TL")</td>
+                                    <td class="text-center">
+                                        <span class="label label-sm label-@(item.IsFinancialConfirmed ? "info" : "warning")">
+                                            @(item.IsFinancialConfirmed ? "EVET" : "HAYIR")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                                            @(item.IsActive ? "AKTİF" : "PASİF")
+                                        </span>
+                                    </td>
+                                    <td class="@(
+                                    grnTKPaymentStatusList.Contains(item.LastTKPaymentStatus) ? "font-green" :
+                                    redTKPaymentStatusList.Contains(item.LastTKPaymentStatus) ? "font-red" : "")">
+                                        @(TypeService.GetNameByValue(item.LastTKPaymentStatus))
+                                    </td>
+                                    <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                                    <td class="text-center">
+                                        <a class="btn btn-xs text-proper financial-confirm @(item.IsFinancialConfirmed ? "disabled" : "")">Onayla</a>
+                                        <a href="/Payment/Detail/@item.ID" class="btn btn-xs text-proper">Git</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.ListeUzerindeOdemeOnayi))
+{
+    <div class="modal fade" id="financial-confirmation-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+
+                @using (Ajax.BeginForm("UpdatePaymentFinancialConfirmationAjax", "Payment",
+                new AjaxOptions()
+                {
+                    HttpMethod = "POST",
+                    OnBegin =   "Payment.UpdatePaymentFinancialConfirmationAjaxBegin",
+                    OnSuccess = "Payment.UpdatePaymentFinancialConfirmationAjaxSuccess",
+                    OnFailure = "Payment.UpdatePaymentFinancialConfirmationAjaxFailure"
+                },
+                new { id = "form-update-payment-financial-confirmation" }))
+                {
+                    <div class="modal-body">
+
+                        <input type="hidden" name="ID" id="payment_id" />
+                        <input type="hidden" name="FromPaymentList" value="true" />
+
+                        <p>Finansal onay vermeniz durumunda ödeme kaydını oluşturan kullanıcının/kullanıcıların hesabına eklenecek bakiye bilgisi aşağıdaki gibidir.</p>
+
+                        <table class="table">
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Ödeme Kaydı Tutarı</th>
+                                <th>Komisyon Oranı</th>
+                                <th>Komisyon Tutarı</th>
+                            </tr>
+                            <tr>
+                                <td class="user_fullname"></td>
+                                <td class="payment_amountpaid"></td>
+                                <td class="payment_usercommissionrate"></td>
+                                <td class="commission_price"></td>
+                            </tr>
+                            <tr class="leader-user-row hidden">
+                                <td class="leader_user_fullname"></td>
+                                <td class="leader_payment_amountpaid"></td>
+                                <td class="leader_payment_usercommissionrate"></td>
+                                <td class="leader_commission_price"></td>
+                            </tr>
+                        </table>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <label class="control-label label-switch col-md-3">Finansal Onay</label>
+                            <div class="col-md-2">
+                                @Html.CheckBox("IsFinancialConfirmed", false,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "is_financial_confirmed",
+                                    data_on_text = "&nbsp;Evet&nbsp;",
+                                    data_off_text = "&nbsp;Hayır&nbsp;",
+                                })
+                            </div>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <textarea
+                                name="Description"
+                                id="description"
+                                class="form-control"
+                                maxlength="500"
+                                rows="5"></textarea>
+                            <label for="description">Açıklama (Opsiyonel)</label>
+                            <span class="help-block">Maximum uzunluk: 500 karakter</span>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                        <button type="submit" class="btn green">ONAYLA</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+@section bottomJS{
+
+    <script src="/assets/content/js/ajax/payment.ajax.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            datatableGenerator.normal('#item_list', 9);
+            $("#search_query, #limit").inputmask({
+                mask: '9',
+                repeat: 12,
+                greedy: !1
+            });
+        });
+    </script>
+
+    <script>
+        $('.financial-confirm').on('click', function () {
+            var id = $(this).closest('.object-item').data('id');
+
+            if (id == '') {
+                toastr.warning('Seçilen ödeme kaydı için onay verilemiyor. Sayfayı yenileyip yeniden deneyiniz.');
+                return;
+            }
+
+            global.showLoader();
+            $.post('/Payment/GetPaymentForFinancialConfirmAjax', { ID: id })
+            .success(function (result) {
+                if (result.IsSuccess) {
+
+                    $('#payment_id').val(id);
+
+                    $('.user_fullname').text(result.Data.User.FullName);
+                    $('.payment_amountpaid').text(result.Data.User.AmountPaid);
+                    $('.payment_usercommissionrate').text(result.Data.User.CommissionRate);
+                    $('.commission_price').text(result.Data.User.CommissionPrice);
+
+                    if (result.Data.LeaderUser.FullName) {
+                        $('.leader-user-row').removeClass('hidden');
+
+                        $('.leader_user_fullname').text(result.Data.LeaderUser.FullName);
+                        $('.leader_payment_amountpaid').text(result.Data.LeaderUser.AmountPaid);
+                        $('.leader_payment_usercommissionrate').text(result.Data.LeaderUser.CommissionRate);
+                        $('.leader_commission_price').text(result.Data.LeaderUser.CommissionPrice);
+                    }
+
+                    $('#financial-confirmation-modal').modal('show');
+                }
+                else {
+                    toastr.error(result.Message);
+                }
+            })
+            .fail(function () {
+                toastr.error('Internal Server Error');
+            })
+            .always(function () {
+                global.hideLoader();
+            });
+        });
+
+        $("#financial-confirmation-modal").on("hidden.bs.modal", function () {
+
+            $('.leader-user-row').addClass('hidden');
+
+            $('#payment_id').val('');
+
+            $('.user_fullname').text('');
+            $('.payment_amountpaid').text('');
+            $('.payment_usercommissionrate').text('');
+            $('.commission_price').text('');
+
+            $('.leader_user_fullname').text('');
+            $('.leader_payment_amountpaid').text('');
+            $('.leader_payment_usercommissionrate').text('');
+            $('.leader_commission_price').text('');
+
+            $('#description').val('');
+            $('#is_financial_confirmed').attr('checked', false).change();
+        });
+    </script>
+}

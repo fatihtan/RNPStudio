@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Sky.CDN</id>
+    <version>1.0.1</version>
+    <title>Sky.CDN</title>
+    <authors>Dixie7 Software Corporation</authors>
+    <owners>Dixie7 Software Corporation</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides CDN Transaction</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2013 - 2021 Dixie7</copyright>
+    <tags>CDN</tags>
+    <dependencies>
+      <dependency id="Dapper" version="1.50.2" />
+      <dependency id="Sky.Repository" />
+    </dependencies>
+  </metadata>
+</package>

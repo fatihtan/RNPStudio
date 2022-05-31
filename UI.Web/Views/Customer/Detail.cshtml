@@ -1,0 +1,236 @@
+﻿@using Sky.Common.DTO
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+
+@model UI.Web.Models.Customer.CustomerModel
+
+@{
+    string PageTitle = string.Format("{0} {1}", Model.Customer.FirstName, Model.Customer.LastName);
+    ViewBag.Title = PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <link href="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/global/plugins/jquery-file-upload/blueimp-gallery/blueimp-gallery.min.css" rel="stylesheet" type="text/css" />
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableCSS.cshtml")
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.tr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js" type="text/javascript"></script>
+    <script src="/assets/global/plugins/jquery-form/jquery.form.js"></script>
+    <script src="/assets/global/plugins/jquery-file-upload/blueimp-gallery/jquery.blueimp-gallery.min.js" type="text/javascript"></script>
+
+    @Html.Partial("/Views/Shared/Partial/_DatatableJS.cshtml")
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/Customer/List">Müşteriler</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <strong>
+                    <a href="/Customer/Detail/@Model.Customer.ID">@PageTitle</a>
+                </strong>
+            </li>
+        </ul>
+    </div>
+
+    <h1 class="page-title"><small></small></h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN TAB PORTLET-->
+            <div class="portlet light bordered">
+                <div class="portlet-title tabbable-line">
+
+                    @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriyeNotEkleme))
+                    {
+                        <a href="#add-note-modal" data-toggle="modal" class="btn blue btn-outline text-proper"><i class="fa fa-plus"></i>Not Ekle</a>
+                    }
+
+                    <a href="/Customer/NoteList/@Model.Customer.ID" class="btn blue btn-outline text-proper"><i class="fa fa-sticky-note-o"></i>Notlar</a>
+
+                    <ul class="nav nav-tabs">
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriKisiselBilgileriGoruntuleme))
+                        {
+                            <li>
+                                <a href="#personal_info" data-toggle="tab">Kişisel</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriGuvenlikBilgileriniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#security_settings" data-toggle="tab">Güvenlik Ayarları</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriEkBilgileriniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#profile_info" data-toggle="tab">Ek Bilgiler</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriKayitBilgileri))
+                        {
+                            <li>
+                                <a href="#register_detail" data-toggle="tab">Kayıt Bilgisi</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriSosyalMedyaHesaplari))
+                        {
+                            <li>
+                                <a href="#social_media_accounts" data-toggle="tab">Sosyal Medya Hesapları</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriOdemeKayitlari))
+                        {
+                            <li>
+                                <a href="#payment_list" data-toggle="tab">Ödemeler</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriCekilisKatilimlari))
+                        {
+                            <li>
+                                <a href="#raffleparticipant_list" data-toggle="tab">Çekiliş Katılımları</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusterininFaturaBilgileri))
+                        {
+                            <li>
+                                <a href="#bill_info_list" data-toggle="tab">Fatura Bilgileri</a>
+                            </li>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusterininFaturalariniGoruntuleme))
+                        {
+                            <li>
+                                <a href="#customer_bill" data-toggle="tab">Faturalar</a>
+                            </li>
+                        }
+                        
+                    </ul>
+                </div>
+                <div class="portlet-body">
+                    <div class="tab-content">
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriKisiselBilgileriGoruntuleme))
+                        {
+                            <div class="tab-pane" id="personal_info">
+                                @Html.Partial("Partial/_PersonalInfo")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriGuvenlikBilgileriniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="security_settings">
+                                @Html.Partial("Partial/_SecuritySettings")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriEkBilgileriniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="profile_info">
+                                @Html.Partial("Partial/_ProfileInfo")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriKayitBilgileri))
+                        {
+                            <div class="tab-pane" id="register_detail">
+                                @Html.Partial("Partial/_RegisterDetail")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriSosyalMedyaHesaplari))
+                        {
+                            <div class="tab-pane" id="social_media_accounts">
+                                @Html.Partial("Partial/_SocialMediaAccounts")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriOdemeKayitlari))
+                        {
+                            <div class="tab-pane" id="payment_list">
+                                @Html.Partial("Partial/_PaymentList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriCekilisKatilimlari))
+                        {
+                            <div class="tab-pane" id="raffleparticipant_list">
+                                @Html.Partial("Partial/_RaffleParticipantList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusterininFaturaBilgileri))
+                        {
+                            <div class="tab-pane" id="bill_info_list">
+                                @Html.Partial("Partial/_BillInfoList")
+                            </div>
+                        }
+
+                        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusterininFaturalariniGoruntuleme))
+                        {
+                            <div class="tab-pane" id="customer_bill">
+                                @Html.Partial("Partial/_CustomerBill")
+                            </div>
+                        }
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.MusteriyeNotEkleme))
+{
+    @Html.Partial("Partial/_CustomerNote")
+}
+
+<input type="hidden" id="CDNBaseURL" value="@System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"]" />
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/customer.ajax.js?v=1"></script>
+    <script src="/assets/content/js/customer.detail.js?v=1"></script>
+
+    <script>
+        $('.bimp-link').click(function (event) {
+            event = event || window.event;
+            var target = event.target || event.srcElement;
+            var link = target.src ? target.parentNode : target;
+            var options = { index: link, event: event };
+            var links = document.getElementsByClassName('bimp-link');
+            blueimp.Gallery(links, options);
+        });
+    </script>
+}

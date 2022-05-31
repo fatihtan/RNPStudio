@@ -1,0 +1,55 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+@{
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+}
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateSecuritySettingsAjax", "User",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin = "User.UpdateSecuritySettingsAjaxBegin",
+            OnSuccess = "User.UpdateSecuritySettingsAjaxSuccess",
+            OnFailure = "User.UpdateSecuritySettingsAjaxFailure"
+        },
+        new { id = "form-security-settings" }))
+    {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.User.ID">
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="email"
+                    name="Email" 
+                    value="@Model.User.Email" 
+                    required="required" />
+                <label for="email">Email</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="password"
+                    name="Password" 
+                    value="@Model.UserPasswordInfo.HashPassword" 
+                    required="required" />
+                <label for="password">Şifre</label>
+            </div>
+        </div>
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+    }
+
+    <small>Bu kullanıcıya ait eski şifreleri görmek için <strong><a href="/User/PasswordList/@Model.User.ID">tıklayınız</a></strong></small>
+    <br />
+    <small>Bu kullanıcının şifre sıfırlama taleplerini görüntülemek için <strong><a href="/User/PasswordResetList/@Model.User.ID">tıklayınız</a></strong></small>
+</div>

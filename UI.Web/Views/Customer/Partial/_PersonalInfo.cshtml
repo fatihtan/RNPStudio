@@ -1,0 +1,117 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.Customer.CustomerModel
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateCustomerPersonalInfoAjax", "Customer",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin =   "Customer.UpdateCustomerPersonalInfoAjaxBegin",
+            OnSuccess = "Customer.UpdateCustomerPersonalInfoAjaxSuccess",
+            OnFailure = "Customer.UpdateCustomerPersonalInfoAjaxFailure"
+        },
+        new { id = "form-personel-info" }))
+    {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.Customer.ID">
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="firstname"
+                    name="FirstName" 
+                    value="@Model.Customer.FirstName" 
+                    maxlength="50"
+                    required="required" />
+                <label for="firstname">Ad</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="lastname"
+                    name="LastName" 
+                    value="@Model.Customer.LastName" 
+                    maxlength="50"
+                    required="required" />
+                <label for="lastname">Soyad</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <select name="CountryID" id="country_id" class="select2 form-control placeholder-no-fix" required="required">
+                    <option></option>
+                    @{
+                        Sky.CMS.DTO.Country CustomerCountry = null;
+                    }
+                    @foreach (var item in Model.CountryList)
+                    {
+                        <option 
+                            data-url="@item.URL" 
+                            data-code="@item.PhoneCode" 
+                            value="@item.ID" @(Model.Customer.CountryID == item.ID ? "selected" : "")>@item.Name</option>
+                        
+                        if (Model.Customer.CountryID == item.ID)
+                        {
+                            CustomerCountry = item;
+                        }
+                    }
+                </select>
+                <label for="country_id">Ülke</label>
+            </div>
+
+            <div class="form-group form-md-line-input">
+                @if (CustomerCountry != null)
+                {
+                    <a href="tel:@(string.Format("+{0} {1}", CustomerCountry.PhoneCode, Model.Customer.PhoneNumber))">ARA</a>
+                }
+
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="phonenumber"
+                    name="PhoneNumber" 
+                    value="@Model.Customer.PhoneNumber"
+                    maxlength="50"
+                    required="required" />
+                <label for="phonenumber">Telefon Numarası</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <label class="control-label label-switch col-md-2">Durum</label>
+                <div class="col-md-2">
+                    @Html.CheckBox("IsActive", Model.Customer.IsActive,
+                    new
+                    {
+                        @class = "make-switch",
+                        data_on_text = "&nbsp;Aktif&nbsp;",
+                        data_off_text = "&nbsp;Pasif&nbsp;"
+                    })
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <label class="control-label label-switch col-md-2">Silindi</label>
+                <div class="col-md-2">
+                    @Html.CheckBox("IsDeleted", !Model.Customer.IsDeleted,
+                    new
+                    {
+                        @class = "make-switch",
+                        data_on_text = "&nbsp;Hayır&nbsp;",
+                        data_off_text = "&nbsp;Evet&nbsp;"
+                    })
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+    }
+</div>

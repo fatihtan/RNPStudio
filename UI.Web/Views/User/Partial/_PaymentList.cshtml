@@ -1,0 +1,123 @@
+﻿@using Sky.Common.Extensions
+@using Sky.Common.DTO
+@using Sky.CMS.Services
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+}
+
+@model UI.Web.Models.User.UserModel
+
+<table class="table table-striped table-bordered table-hover dt-responsive" id="table_payment_list">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Hesap Adı</th>
+            <th class="all text-center">Toplam Tutar</th>
+            <th class="all text-center">Ödenen Tutar</th>
+            <th class="all text-center">Kom. Oranı</th>
+            <th class="all text-center">Ödeme Türü</th>
+            <th class="all text-center">Fin. Onaylı</th>
+            <th class="all text-center">İptal</th>
+            <th class="all text-center">Durum</th>
+            <th class="all text-center">Tarih</th>
+
+            <th class="none">Finansal Onay Tarihi</th>
+            <th class="none">Görünür</th>
+            <th class="none">Silindi</th>
+            <th class="none">IP Adres</th>
+            <th class="none">Ödeme Hareketleri</th>
+            <th class="none">&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.PaymentList)
+        {
+            <tr>
+                <td>@item.ID.ToString("00000")</td>
+                <td class="absolute-td">
+                    @item.SocialMediaAccount.AccountName
+                    <span class="absolute-td-social"><i class="fa fa-@(item.SocialMediaAccount.TKSocialMediaPlatform.ToString().ToLower(EnglishCultureInfo))"></i></span>
+                </td>
+                <td class="text-center">@item.TotalPrice.ToThousandSeperatorWithCurrency()</td>
+                <td class="text-center">@item.AmountPaid.ToThousandSeperatorWithCurrency()</td>
+                <td class="text-center">% @item.UserCommissionRate</td>
+                <td class="text-center">@TypeService.GetNameByValue(item.TKPaymentType)</td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsFinancialConfirmed ? "success" : "warning")">
+                        @(item.IsFinancialConfirmed ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(!item.IsCancelled ? "info" : "danger")">
+                        @(!item.IsCancelled ? "HAYIR" : "EVET")
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                        @(item.IsActive ? "AKTİF" : "PASİF")
+                    </span>
+                </td>
+
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+                <td>@(item.FinancialConfirmedAt.HasValue ? item.FinancialConfirmedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsShown ? "success" : "warning")">
+                        @(item.IsShown ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="label label-sm label-@(!item.IsDeleted ? "success" : "danger")">
+                        @(!item.IsDeleted ? "HAYIR" : "EVET")
+                    </span>
+                </td>
+
+                <td>@item.IPAddress</td>
+
+                <td>
+                    <table class="table table-bordered table-hover">
+                        <tr>
+                            <th>Aksiyon</th>
+                            <th>Açıklama</th>
+                            <th>Durum</th>
+                            <th>Silindi</th>
+                            <th>Tarih</th>
+                            <th>Dekont</th>
+                        </tr>
+
+                        @foreach (var itemPSA in item.PaymentStatusRelationList)
+                        {
+                            <tr>
+                                <td>@TypeService.GetNameByValue(itemPSA.TKPaymentStatus)</td>
+                                <td class="wrap-line">@itemPSA.Description</td>
+                                <td class="text-center">
+                                    <span class="label label-sm label-@(itemPSA.IsActive ? "info" : "warning")">
+                                        @(itemPSA.IsActive ? "AKTİF" : "PASİF")</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="label label-sm label-@(!itemPSA.IsDeleted ? "info" : "danger")">@(!itemPSA.IsDeleted ? "HAYIR" : "EVET")</span>
+                                </td>
+                                <td>@itemPSA.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(itemPSA.ReceiptURL))
+                                    {
+                                        <a href="@(string.Format("{0}{1}", CDNBaseURL, itemPSA.ReceiptURL))" target="_blank">İndir</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+                </td>
+
+                <td>
+                    <a href="/Payment/Detail/@item.ID" class="btn btn-sm btn-default text-proper">
+                        <i class="fa fa-edit"></i>&nbsp;Görüntüle</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

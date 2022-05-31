@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Sky.Core</id>
+    <version>1.0.20</version>
+    <title>Sky.Core</title>
+    <authors>Dixie7 Software Corporation</authors>
+    <owners>Dixie7 Software Corporation</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides Core service for all projects</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2013 - 2021 Dixie7</copyright>
+    <tags>Core</tags>
+  </metadata>
+</package>

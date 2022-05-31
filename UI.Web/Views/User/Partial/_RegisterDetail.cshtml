@@ -1,0 +1,101 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+@{
+    IFormatProvider TurkishCulture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="table-scrollable">
+            <table class="table table-hover">
+                <tr>
+                    <th class="col-md-4">Website</th>
+                    <td>@Model.UserRegisterDetail.TKWebsite.ToString()</td>
+                </tr>
+                <tr>
+                    <th class="col-md-4">Platform</th>
+                    <td>
+                        <span class="label label-sm label-info">
+                            @Model.UserRegisterDetail.TKPlatform.ToString()
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-md-4">Dil</th>
+                    <td>
+                        <span class="label label-sm label-@(
+                        Model.UserRegisterDetail.TKLanguage == TK.TKLanguage.Turkish ? 
+                        "success" : "warning")">@Model.UserRegisterDetail.TKLanguage.ToString()</span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="col-md-4">Sosyal Medyadan Kayıtlı</th>
+                    <td>
+                        <span class="label label-sm label-info">
+                            @(Model.UserRegisterDetail.IsSocialMediaRegistration ? "EVET" : "HAYIR")
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="col-md-4">Media Platform</th>
+                    <td>
+                        @if (Model.UserRegisterDetail.TKSocialMediaPlatform == TK.TKSocialMediaPlatform.Undefined)
+                        {
+                            <span>&nbsp;</span>
+                        }
+                        else
+                        {
+                            <span class="label label-sm label-info">
+                                @Model.UserRegisterDetail.TKSocialMediaPlatform.ToString()
+                            </span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-md-4">IP Adres</th>
+                    <td>@Model.UserRegisterDetail.IPAddress</td>
+                </tr>
+                <tr>
+                    <th class="col-md-5">Kayıt Tarihi</th>
+                    <td>@Model.UserRegisterDetail.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCulture)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="table-scrollable">
+            <table class="table table-hover">
+                <tr>
+                    <th class="col-md-2">Referans Kullanıcı</th>
+                    <td>@Model.UserRegisterDetail.ReferralUserFullName</td>
+                </tr>
+                <tr>
+                    <th>Browser Detail</th>
+                    <td>
+                        <div class="description-field margin-zero padding-zero">@Model.UserRegisterDetail.BrowserDetail</div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Version</th>
+                    <td>@Model.UserRegisterDetail.Version</td>
+                </tr>
+                <tr>
+                    <th>Device Model</th>
+                    <td>@Model.UserRegisterDetail.DeviceModel</td>
+                </tr>
+                <tr>
+                    <th>Device Identity</th>
+                    <td>@Model.UserRegisterDetail.DeviceIdentity</td>
+                </tr>
+                <tr>
+                    <th>Ek Bilgi</th>
+                    <td>@Model.UserRegisterDetail.AdditionalInfo</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,225 @@
+﻿@using Sky.Common.DTO
+@using Sky.CMS.Services
+@using Sky.SuperUser.DTO
+@using UI.Web.Infrastructure
+@model UI.Web.Models.Payment.PaymentModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+
+    List<AdministratorPermissionAction> PermissionActionList = ViewBag.PermissionActionList;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="payment-status-relation-list" class="table table-bordered table-hover">
+            <tr>
+                <th class="col-md-2">Aksiyon</th>
+                <th>Açıklama</th>
+                <th class="col-md-1 text-center">Durum</th>
+                <th class="col-md-1 text-center">Silindi</th>
+                <th class="col-md-1 text-center">Dekont</th>
+                <th class="col-md-1">IP Adres</th>
+                <th class="col-md-1">Tarih</th>
+            </tr>
+
+            @foreach (var item in Model.Payment.PaymentStatusRelationList)
+            {
+                <tr class="payment-status-relation-row payment-status-relation-@item.ID">
+                    <td class="col-md-2">@TypeService.GetNameByValue(item.TKPaymentStatus)</td>
+
+                    <td class="wrap-line">@item.Description</td>
+
+                    <td class="col-md-1 text-center">
+                        <a class="payment-status-isactive update-payment-status-relation" data-id="@item.ID" data-state="@(item.IsActive ? 1 : 0)">
+                            <span class="label label-sm label-@(item.IsActive ? "info" : "warning")">
+                                @(item.IsActive ? "AKTİF" : "PASİF")
+                            </span>
+                        </a>
+                    </td>
+
+                    <td class="col-md-1 text-center">
+                        <a class="payment-status-isdeleted update-payment-status-relation" data-id="@item.ID" data-state="@(item.IsDeleted ? 1 : 0)">
+                            <span class="label label-sm label-@(!item.IsDeleted ? "info" : "danger")">
+                                @(!item.IsDeleted ? "HAYIR" : "EVET")
+                            </span>
+                        </a>
+                    </td>
+
+                    <td class="text-center">
+                        @if (!string.IsNullOrEmpty(item.ReceiptURL))
+                        {
+                            <a target="_blank" href="@(string.Format("{0}{1}", CDNBaseURL, item.ReceiptURL))"><i class="fa fa-download"></i>İndir</a>
+                        }
+                    </td>
+
+                    <td class="col-md-1">@item.IPAddress</td>
+
+                    <td class="col-md-1">@item.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                </tr>
+            }
+        </table>
+
+        @if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.YeniOdemeHareketiEkleme))
+        {
+            <div class="form">
+                @using (Html.BeginForm("PaymentStatusRelationSaveAjax", "Payment", FormMethod.Post, new { id = "form-save-payment-status-relation-ajax" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-body">
+                        <input type="hidden" name="PaymentID" value="@Model.Payment.ID">
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <label class="control-label label-switch col-md-2">Mevcutları Pasif Yap</label>
+                            <div class="col-md-2">
+                                @Html.CheckBox("InActiveAll", true,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "in_active_all",
+                                    data_on_text = "&nbsp;Evet&nbsp;",
+                                    data_off_text = "&nbsp;Hayır&nbsp;"
+                                })
+                            </div>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <label class="control-label label-switch col-md-2">Mevcutları Sil</label>
+                            <div class="col-md-2">
+                                @Html.CheckBox("DeleteAll", true,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "delete_all",
+                                    data_on_text = "&nbsp;Hayır&nbsp;",
+                                    data_off_text = "&nbsp;Evet&nbsp;"
+                                })
+                            </div>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label ">
+                            <span class="text-gray">Ödeme Durumu</span>
+                            <select
+                                class="select2 form-control"
+                                id="tk_payment_status"
+                                name="TKPaymentStatus"
+                                required="required">
+                                <option></option>
+
+                                @foreach (var item in Model.TKPaymentStatusList)
+                                {
+                                    <option value="@item.Value">@item.Name</option>
+                                }
+
+                            </select>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <textarea
+                                name="Description"
+                                id="description"
+                                class="form-control"
+                                maxlength="1000"
+                                rows="5"></textarea>
+                            <label for="description">Açıklama (Opsiyonel)</label>
+                            <span class="help-block">Maximum uzunluk: 1000 karakter</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label text-gray display-block">Dekont / Dosya (Opsiyonel)</label>
+                            <div class="fileinput fileinput-new" data-provides="fileinput">
+                                <div class="input-group input-large">
+
+                                    <div class="form-control uneditable-input input-fixed input-medium" data-trigger="fileinput">
+                                        <i class="fa fa-file fileinput-exists"></i>&nbsp;
+                                        <span class="fileinput-filename"></span>
+                                    </div>
+
+                                    <span class="input-group-addon btn default btn-file">
+                                        <span class="fileinput-new">DOSYA SEÇ</span>
+                                        <span class="fileinput-exists">DEĞİŞTİR</span>
+                                        <input type="file" name="ReceiptURL" id="receipt_url" />
+                                    </span>
+
+                                    <a href="javascript:;"
+                                        class="input-group-addon btn red fileinput-exists"
+                                        data-dismiss="fileinput">KALDIR</a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions noborder">
+                        <div class="col-md-3">
+                            <button type="submit" name="submit" value="submit" class="btn blue btn-block">KAYDET</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (PermissionActionControl.Check(PermissionActionList, TK.Project.Studio.TKPermissionAction.OdemeHareketleriniGuncelleme))
+{
+    <div id="payment-status-update-modal" class="modal fade" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Ödeme Hareketi Güncelle</h4>
+                </div>
+                @using (Ajax.BeginForm("UpdatePaymentStatusRelationAjax", "Payment",
+                new AjaxOptions()
+                {
+                    HttpMethod = "POST",
+                    OnBegin =   "Payment.UpdatePaymentStatusRelationAjaxBegin",
+                    OnSuccess = "Payment.UpdatePaymentStatusRelationAjaxSuccess",
+                    OnFailure = "Payment.UpdatePaymentStatusRelationAjaxFailure"
+                },
+                new { id = "form-update-payment-status-relation" }))
+                {
+                    <div class="modal-body">
+                        <input type="hidden" id="payment_status_update_id" name="ID" />
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <label class="control-label col-md-3 label-switch">Durum</label>
+                            <div class="col-md-2">
+                                @Html.CheckBox("IsActive", false,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "payment_status_update_is_active",
+                                    data_on_text = "&nbsp;Aktif&nbsp;",
+                                    data_off_text = "&nbsp;Pasif&nbsp;"
+                                })
+                            </div>
+                        </div>
+
+                        <div class="form-group form-md-line-input form-md-floating-label">
+                            <label class="control-label col-md-3 label-switch">Silindi</label>
+                            <div class="col-md-2">
+                                @Html.CheckBox("IsDeleted", false,
+                                new
+                                {
+                                    @class = "make-switch",
+                                    id = "payment_status_update_is_deleted",
+                                    data_on_text = "&nbsp;Hayır&nbsp;",
+                                    data_off_text = "&nbsp;Evet&nbsp;"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn dark btn-outline">VAZGEÇ</button>
+                        <button type="submit" class="btn green">GÜNCELLE</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+<input type="hidden" id="CDNBaseURL" value="@CDNBaseURL" />

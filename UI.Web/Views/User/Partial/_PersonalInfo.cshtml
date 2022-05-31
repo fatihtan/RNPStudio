@@ -1,0 +1,323 @@
+﻿@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+@{
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+}
+
+<div class="form">
+    @using (Ajax.BeginForm("UpdateUserPersonalInfoAjax", "User",
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnBegin =   "User.UpdateUserPersonalInfoAjaxBegin",
+            OnSuccess = "User.UpdateUserPersonalInfoAjaxSuccess",
+            OnFailure = "User.UpdateUserPersonalInfoAjaxFailure"
+        },
+        new { id = "form-personel-info" }))
+    {
+        <div class="form-body">
+
+            <input type="hidden" name="ID" value="@Model.User.ID">
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="firstname"
+                    name="FirstName" 
+                    value="@Model.User.FirstName" 
+                    required="required" />
+                <label for="firstname">Ad</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="lastname"
+                    name="LastName" 
+                    value="@Model.User.LastName" 
+                    maxlength="50"
+                    required="required" />
+                <label for="lastname">Soyad</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <select name="CountryID" id="country_id" class="select2 form-control placeholder-no-fix" required="required">
+                    <option></option>
+                    @{
+                        Sky.CMS.DTO.Country UserCountry = null;
+                    }
+                    @foreach (var item in Model.CountryList)
+                    {
+                        <option 
+                            data-url="@item.URL" 
+                            data-code="@item.PhoneCode" 
+                            value="@item.ID" @(Model.User.CountryID == item.ID ? "selected" : "")>@item.Name</option>
+                        
+                        if (Model.User.CountryID == item.ID)
+                        {
+                            UserCountry = item;
+                        }
+                    }
+                </select>
+                <label for="country_id">Ülke</label>
+            </div>
+
+            <div class="form-group form-md-line-input">
+                @if (UserCountry != null)
+                {
+                    <a href="tel:@(Model.User.GetFullPhoneNumber())">ARA</a>
+                }
+
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    autocomplete="off"
+                    id="phonenumber"
+                    name="PhoneNumber" 
+                    value="@Model.User.PhoneNumber" 
+                    maxlength="50"
+                    required="required" />
+                <label for="phonenumber">Telefon</label>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <div class="input-group">
+                    <span class="input-group-addon">%</span>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        autocomplete="off"
+                        id="commission_rate"
+                        name="CommissionRate" 
+                        value="@Model.User.CommissionRate" 
+                        required="required" />
+                    <label for="commission_rate">Komisyon Oranı</label>
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <div class="input-group">
+                    <span class="input-group-addon">TL</span>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        autocomplete="off"
+                        id="min_withdraw"
+                        name="MinWithdraw" 
+                        value="@Model.User.MinWithdraw" 
+                        required="required" />
+                    <label for="min_withdraw">Minimum Çekim Tutarı</label>
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <label class="control-label label-switch col-md-2">Durum</label>
+                <div class="col-md-2">
+                    @Html.CheckBox("IsActive", Model.User.IsActive,
+                    new
+                    {
+                        @class = "make-switch",
+                        data_on_text = "&nbsp;Aktif&nbsp;",
+                        data_off_text = "&nbsp;Pasif&nbsp;"
+                    })
+                </div>
+            </div>
+
+            <div class="form-group form-md-line-input form-md-floating-label">
+                <label class="control-label label-switch col-md-2">Silindi</label>
+                <div class="col-md-2">
+                    @Html.CheckBox("IsDeleted", !Model.User.IsDeleted,
+                    new
+                    {
+                        @class = "make-switch",
+                        data_on_text = "&nbsp;Hayır&nbsp;",
+                        data_off_text = "&nbsp;Evet&nbsp;"
+                    })
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="form-actions noborder">
+            <button type="submit" name="submit" value="submit" class="btn blue">GÜNCELLE</button>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12 text-right">
+                <a href="/Home/SendEmail?UserID=@Model.User.ID" target="_blank" class="btn default text-proper"><i class="fa fa-envelope"></i>Email Gönder</a>
+                <a data-tkemailtemplate="@((int)TK.TKEmailTemplate.UserAccountConfirmed)" class="btn green text-proper send-email-user-account-confirmation"><i class="fa fa-envelope"></i>Onaylandı Emaili Gönder</a>
+                <a data-tksmstemplate="@((int)TK.TKSmsTemplate.UserAccountConfirmed)" class="btn green text-proper send-sms-user-account-confirmation"><i class="icon-envelope"></i>Onaylandı Sms'i Gönder</a>
+
+                <a data-tkemailtemplate="@((int)TK.TKEmailTemplate.UserAccountNotConfirmed)" class="btn red text-proper send-email-user-account-confirmation"><i class="fa fa-envelope"></i>Onaylanamadı Emaili Gönder</a>
+                <a data-tksmstemplate="@((int)TK.TKSmsTemplate.UserAccountNotConfirmed)" class="btn red text-proper send-sms-user-account-confirmation"><i class="icon-envelope"></i>Onaylanamadı Sms'i Gönder</a>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="send-email-user-account-confirmation-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="user-account-confirmation-modal-title"></h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendEmailAccountConfirmationAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.SendEmailAccountConfirmationAjaxBegin",
+                OnSuccess = "User.SendEmailAccountConfirmationAjaxSuccess",
+                OnFailure = "User.SendEmailAccountConfirmationAjaxFailure"
+            }, new
+            {
+                id = "form-send-email-account-confirmation"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="TKEmailTemplate" id="TKEmailTemplate" />
+                    <input type="hidden" name="ID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendemail_confirmation_fullname"
+                            autocomplete="off"
+                            value="@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendemail_confirmation_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="Email"
+                            id="sendemail_confirmation_email"
+                            autocomplete="off"
+                            value="@Model.User.Email"
+                            required="required"
+                            maxlength="50" />
+                        <label for="sendemail_confirmation_email">Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <label class="control-label col-md-2 label-switch">BCC Kullan</label>
+                        <div class="mt-radio-inline">
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="true" checked="checked" />
+                                Evet
+                            <span></span>
+                            </label>
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="false" />
+                                Hayır
+                            <span></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-md-line-input " id="div-send-email-confirmation-bcc-email">
+                        <input type="text"
+                            class="form-control"
+                            name="BCCEmail"
+                            id="sendemail_confirmation_bccemail"
+                            autocomplete="off"
+                            required="required"
+                            value="@ContactEmail"
+                            maxlength="50" />
+                        <label for="sendemail_confirmation_bccemail">BCC Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="send-sms-user-account-confirmation-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="sms-user-account-confirmation-modal-title"></h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendSmsAccountConfirmationAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.SendSmsAccountConfirmationAjaxBegin",
+                OnSuccess = "User.SendSmsAccountConfirmationAjaxSuccess",
+                OnFailure = "User.SendSmsAccountConfirmationAjaxFailure"
+            }, new
+            {
+                id = "form-send-sms-account-confirmation"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="TKSmsTemplate" id="TKSmsTemplate" />
+                    <input type="hidden" name="ID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendsms_confirmation_fullname"
+                            autocomplete="off"
+                            value="@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendsms_confirmation_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control input-phone-number"
+                            data-country-code="@Model.User.CountryPhoneCode"
+                            data-phone-number="@Model.User.PhoneNumber"
+                            name="PhoneNumber"
+                            id="sendsms_confirmation_phonenumber"
+                            autocomplete="off"
+                            value="@Model.User.GetFullPhoneNumber()"
+                            required="required" />
+                        <label for="sendsms_confirmation_phonenumber">Telefon Numarası</label>
+                        <span class="help-block"></span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="TKEmailTemplate_UserAccountConfirmed" value="@((int)TK.TKEmailTemplate.UserAccountConfirmed)" />
+<input type="hidden" id="TKEmailTemplate_UserAccountNotConfirmed" value="@((int)TK.TKEmailTemplate.UserAccountNotConfirmed)" />
+
+<input type="hidden" id="TKSmsTemplate_UserAccountConfirmed" value="@((int)TK.TKSmsTemplate.UserAccountConfirmed)" />
+<input type="hidden" id="TKSmsTemplate_UserAccountNotConfirmed" value="@((int)TK.TKSmsTemplate.UserAccountNotConfirmed)" />

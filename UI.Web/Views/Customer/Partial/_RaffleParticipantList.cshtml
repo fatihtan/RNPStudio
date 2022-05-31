@@ -1,0 +1,98 @@
+﻿@using Sky.Common.DTO
+@using Sky.Common.Extensions
+@using Sky.CMS.Services
+
+@model UI.Web.Models.Customer.CustomerModel
+
+@{
+    string CDNBaseURL = System.Configuration.ConfigurationManager.AppSettings["CDNBaseURL"];
+    System.Globalization.CultureInfo EnglishCultureInfo = new System.Globalization.CultureInfo("en-US");
+}
+
+<table class="table table-striped table-bordered table-hover dt-responsive" id="table_raffle_participant_list">
+    <thead>
+        <tr>
+            <th class="all">Katılım No</th>
+            <th class="all">Ç. No</th>
+            <th class="all">Hesap Adı</th>
+            <th class="all">Paket</th>
+            <th class="all">Liste Kodu</th>
+            <th class="all">Katılım Türü</th>
+            <th class="all">Katılım Durumu</th>
+            <th class="all">Hedef</th>
+            <th class="all">Başlangıç</th>
+            <th class="all">Bitiş</th>
+            <th class="all text-center">Onaylı</th>
+            <th class="all text-center">Durum</th>
+            <th class="all text-center">Tarih</th>
+
+            <th class="none">Onay Tarihi</th>
+            <th class="none">Başlangıç Ekran Görüntüsü</th>
+            <th class="none">Bitiş Ekran Görüntüsü</th>
+            <th class="none">&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.RaffleParticipantList)
+        {
+            <tr>
+                <td>@item.ID.ToString("00000")</td>
+                <td>@item.RaffleID.ToString("00000")</td>
+
+                <td class="absolute-td">
+                    @item.SocialMediaAccount.AccountName
+                    <span class="absolute-td-social"><i class="fa fa-@(item.SocialMediaAccount.TKSocialMediaPlatform.ToString().ToLower(EnglishCultureInfo))"></i></span>
+                </td>
+                <td>@item.Raffle.RaffleTemplate.Name</td>
+                <td>@item.GetListCode()</td>
+                <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationType))</td>
+                <td>@(TypeService.GetNameByValue(item.TKRaffleParticipationStatus))</td>
+                <td>@item.TargetFollowerCount</td>
+                <td>@item.InitialFollowerCount</td>
+                <td>@item.EventualFollowerCount</td>
+
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsConfirmed ? "success" : "warning")">
+                        @(item.IsConfirmed ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <span class="label label-sm label-@(item.IsActive ? "info" : "danger")">
+                        @(item.IsActive ? "AKTİF" : "PASİF")
+                    </span>
+                </td>
+
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+                <td>@(item.ConfirmedAt.HasValue ? item.ConfirmedAt.Value.ToString("yyyy.MM.dd HH:mm:ss") : "")</td>
+
+                <td>
+                    @if (!string.IsNullOrEmpty(item.InitialScreenShot))
+                    {
+                        <img class="img-responsive img-width-40" src="@(string.Format("{0}/{1}", CDNBaseURL, item.InitialScreenShot))" />
+                    }
+                    else
+                    {
+                        <span>Girilmedi</span>
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.EventualScreenShot))
+                    {
+                        <img class="img-responsive img-width-40" src="@(string.Format("{0}/{1}", CDNBaseURL, item.EventualScreenShot))" />
+                    }
+                    else
+                    {
+                        <span>Girilmedi</span>
+                    }
+                </td>
+
+                <td>
+                    <a href="/Raffle/ParticipantDetail/@item.ID" class="btn btn-sm btn-default text-proper">
+                        <i class="fa fa-edit"></i>&nbsp;GÖRÜNTÜLE</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

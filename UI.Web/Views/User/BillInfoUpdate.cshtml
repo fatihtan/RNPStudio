@@ -1,0 +1,252 @@
+﻿@model UI.Web.Models.User.UserBillInfoModel
+@{
+    ViewBag.Title = string.Format("{0} {1} - Fatura Bilgileri", Model.User.FirstName, Model.User.LastName);
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section topCSS{
+    <link href="/assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+}
+
+@section topJS{
+    <script src="/assets/global/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script src="/assets/global/plugins/jquery-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+}
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/User/List">Kullanıcılar</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <strong>
+                    <a href="/User/Detail/@Model.User.ID#bill_info_list">
+                        @string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)</a>
+                </strong>
+            </li>
+            <li>
+                <i class="fa fa-circle"></i>
+                <span>Fatura Bilgileri Güncelle</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-fire font-green"></i>
+                        <span class="caption-subject bold uppercase">Fatura Bilgileri Güncelle
+                        </span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+
+                    @using (Ajax.BeginForm("BillInfoUpdateAjax", "User", FormMethod.Post,
+                        new AjaxOptions
+                        {
+                            OnBegin = "User.BillInfoUpdateAjaxBegin",
+                            OnSuccess = "User.BillInfoUpdateAjaxSuccess",
+                            OnFailure = "User.BillInfoUpdateAjaxFailure"
+                        }))
+                    {
+                        <div class="form-body">
+
+                            <input type="hidden" name="ID" value="@Model.UserBillInfo.ID" />
+
+                            <input type="hidden" name="UserID" value="@Model.UserBillInfo.UserID" />
+
+                            <div class="form-group form-md-line-input form-md-floating-label ">
+                                <label class="control-label col-md-2 label-switch">
+                                    Fatura Tipi
+                                </label>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper @(!Model.UserBillInfo.IsCorporate ? "active" : "")">
+                                        <input type="radio"
+                                               value="false"
+                                               name="IsCorporate"
+                                               @(!Model.UserBillInfo.IsCorporate ? "checked=\"checked\"" : "") />
+                                        Bireysel
+                                    </label>
+                                    <label class="btn btn-circle btn-outline blue-chambray sbold text-proper @(Model.UserBillInfo.IsCorporate ? "active" : "")">
+                                        <input type="radio"
+                                               value="true"
+                                               name="IsCorporate"
+                                               @(Model.UserBillInfo.IsCorporate ? "checked=\"checked\"" : "") />
+                                        Kurumsal
+                                    </label>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label personal">
+                                <input 
+                                    type="text"
+                                    class="form-control "
+                                    autocomplete="off"
+                                    name="FullName"
+                                    id="fullname"
+                                    maxlength="100"
+                                    value="@Model.UserBillInfo.FullName" />
+                                <label for="fullname">Ad Soyad</label>
+                                <span class="help-block">Maksimum 100 karakter.</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                <input 
+                                    type="text"
+                                    autocomplete="off"
+                                    name="CompanyTitle"
+                                    id="companytitle"
+                                    class="form-control "
+                                    value="@Model.UserBillInfo.CompanyTitle" />
+                                <label for="companytitle">Şirket Ünvanı</label>
+                                <span class="help-block"></span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label personal">
+                                <input 
+                                    type="text" 
+                                    class="form-control "
+                                    autocomplete="off"
+                                    id="citizenidentityno"
+                                    name="CitizenIdentityNo"
+                                    value="@Model.UserBillInfo.CitizenIdentityNo"
+                                    maxlength="15" />
+                                <label for="citizenidentityno">TC Kimlik No</label>
+                                <span class="help-block">Maximum uzunluk: 15 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                <input 
+                                    type="text" 
+                                    class="form-control "
+                                    autocomplete="off"
+                                    id="taxno"
+                                    name="TaxNo"
+                                    value="@Model.UserBillInfo.TaxNo"
+                                    maxlength="15" />
+                                <label for="taxno">Vergi No</label>
+                                <span class="help-block">Maximum uzunluk: 15 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label company">
+                                <input 
+                                    type="text" 
+                                    class="form-control "
+                                    autocomplete="off"
+                                    id="taxoffice"
+                                    name="TaxOffice"
+                                    value="@Model.UserBillInfo.TaxOffice"
+                                    maxlength="50" />
+                                <label for="taxoffice">Vergi Dairesi</label>
+                                <span class="help-block">Maximum uzunluk: 50 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <input 
+                                    type="text" 
+                                    class="form-control "
+                                    autocomplete="off"
+                                    id="phonenumber"
+                                    name="PhoneNumber"
+                                    value="@Model.UserBillInfo.PhoneNumber"
+                                    maxlength="50" />
+                                <label for="phonenumber">Telefon Numarası</label>
+                                <span class="help-block">Maximum uzunluk: 50 karakter</span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <textarea name="FullAddress"
+                                    id="fulladdress"
+                                    class="form-control"
+                                    rows="3">@Model.UserBillInfo.FullAddress</textarea>
+                                <label for="fulladdress">Fatura Adresi</label>
+                                <span class="help-block"></span>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Durum</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsActive", Model.UserBillInfo.IsActive,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_active",
+                                        data_on_text = "&nbsp;Aktif&nbsp;",
+                                        data_off_text = "&nbsp;Pasif&nbsp;"
+                                    })
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Görünür</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsShown", Model.UserBillInfo.IsShown,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_shown",
+                                        data_on_text = "&nbsp;Evet&nbsp;",
+                                        data_off_text = "&nbsp;Hayır&nbsp;"
+                                    })
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input form-md-floating-label">
+                                <label class="control-label col-md-2 label-switch">Silindi</label>
+                                <div class="col-md-2">
+                                    @Html.CheckBox("IsDeleted", !Model.UserBillInfo.IsDeleted,
+                                    new
+                                    {
+                                        @class = "make-switch",
+                                        id = "is_deleted",
+                                        data_on_text = "&nbsp;Hayır&nbsp;",
+                                        data_off_text = "&nbsp;Evet&nbsp;"
+                                    })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions noborder">
+                            <div class="col-md-2">
+                                <a href="/User/Detail/@Model.User.ID#bill_info_list" class="btn default btn-block">GERİ</a>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-block blue">GÜNCELLE</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section bottomJS{
+    <script src="/assets/content/js/ajax/user.ajax.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('input[type=radio][name="IsCorporate"]:checked').trigger('change');
+        });
+
+        $('input[type=radio][name="IsCorporate"]').change(function () {
+            if (this.value == "true") {
+                $('.personal').hide();
+                $('.company').show();
+            }
+            else if (this.value == "false") {
+                $('.company').hide();
+                $('.personal').show();
+            }
+        })
+    </script>
+}

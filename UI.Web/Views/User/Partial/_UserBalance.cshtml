@@ -1,0 +1,353 @@
+﻿@using Sky.CMS.Services
+@using Sky.Common.DTO
+@model UI.Web.Models.User.UserModel
+
+@{
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+    string ContactEmail = System.Configuration.ConfigurationManager.AppSettings["ContactEmail"];
+}
+
+<div class="pull-right margin-bottom-10">
+    <a class="btn btn-sm default text-proper" href="#send-email-user-balance-modal" data-toggle="modal"><i class="fa fa-envelope"></i>&nbsp;Email Gönder</a>
+
+    <a class="btn btn-sm default text-proper" href="#send-sms-user-balance-modal" data-toggle="modal"><i class="icon-envelope"></i>&nbsp;Sms Gönder</a>
+
+    <a class="btn btn-sm green text-proper" href="#add-new-balance-modal" data-toggle="modal"><i class="fa fa-plus"></i>&nbsp;Yeni Ekle</a>
+</div>
+
+<table class="table table-striped table-bordered table-hover dt-responsive" id="table_user_balance_list">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th class="all col-md-1 user-balance-bg1">Önceki<br />
+                Bakiye</th>
+            <th class="all col-md-1 user-balance-bg1">İşlem<br />
+                Tutarı</th>
+            <th class="all col-md-1 user-balance-bg1">Mevcut<br />
+                Bakiye</th>
+
+            <th class="all">Açıklama</th>
+            <th class="all col-md-1">İşlem Türü</th>
+            <th class="all text-center">Durum</th>
+            <th class="all text-center">Tarih</th>
+
+            <th class="none">Kullanıcıya Görünen Açıklama</th>
+            <th class="none">Görünür</th>
+            <th class="none">Silindi</th>
+            <th class="none">IP Adres</th>
+            <th class="none">Bakiye Aksiyon ID</th>
+            <th class="none"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.UserBalanceList)
+        {
+            <tr>
+                <td>@item.ID</td>
+                <td>@item.PreviousBalance.ToString("N", TurkishCultureInfo) TL</td>
+                <td>@item.Amount.ToString("N", TurkishCultureInfo) TL</td>
+                <td class="absolute-td">
+                    @item.CurrentBalance.ToString("N", TurkishCultureInfo) TL
+
+                    @if (item.PreviousBalance > item.CurrentBalance)
+                    {
+                        <span class="absolute-td-red"><i class="fa fa-arrow-down"></i></span>
+                    }
+                    else if (item.PreviousBalance < item.CurrentBalance)
+                    {
+                        <span class="absolute-td-green"><i class="fa fa-arrow-up"></i></span>
+                    }
+                </td>
+
+                <td class="col-md-3"><span class="description-field margin-zero padding-zero">@item.Description</span></td>
+                <td>@TypeService.GetNameByValue(item.TKBalanceAction)</td>
+                <td class="text-center">
+                    <span class="label label-sm 
+                        label-@(item.IsActive ? "success" : "warning")">
+                        @(item.IsActive ? "AKTİF" : "PASİF")
+                    </span>
+                </td>
+                <td class="text-center">@item.CreatedAt.ToString("yyyy.MM.dd HH:mm:ss")</td>
+
+
+                <td>
+                    <div class="description-field">@item.ShownDescription</div>
+                </td>
+                <td>
+                    <span class="label label-sm 
+                        label-@(item.IsShown ? "info" : "warning")">
+                        @(item.IsShown ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+                <td>
+                    <span class="label label-sm 
+                        label-@(item.IsDeleted ? "danger" : "info")">
+                        @(item.IsDeleted ? "EVET" : "HAYIR")
+                    </span>
+                </td>
+                <td>@item.IPAddress</td>
+                <td>@(item.BalanceActionID.HasValue ? item.BalanceActionID.Value.ToString() : "Yok (Yönetici Tanımlı Olabilir)")</td>
+                <td>
+                    <a href="/User/BalanceDetail/@item.ID" 
+                        class="btn text-proper"><i class="fa fa-edit"></i>&nbsp;Düzenle</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="modal fade" id="add-new-balance-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Yeni Bakiye Ekle</h4>
+            </div>
+
+            @using (Ajax.BeginForm("UserBalanceSaveAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.UserBalanceSaveAjaxBegin",
+                OnSuccess = "User.UserBalanceSaveAjaxSuccess",
+                OnFailure = "User.UserBalanceSaveAjaxFailure"
+            }, new
+            {
+                id = "form-save-user-balance"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="ID" value="@Model.ActiveUserBalance.ID" />
+                    <input type="hidden" name="UserID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input form-md-floating-label padding-top-zero">
+                        <label class="text-gray">İşlem Türü</label>
+                        <select class="select2 form-control"
+                            id="tk_balance_action"
+                            name="TKBalanceAction"
+                            required="required">
+                            <option></option>
+
+                            @foreach (var item in Model.TKBalanceActionList)
+                            {
+                                <option value="@item.Value">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group form-md-line-input ">
+                                <input type="text"
+                                    class="form-control"
+                                    name="Amount"
+                                    id="amount"
+                                    required="required" />
+                                <label for="amount">Bakiye İşlem Tutarı (Ekle / Çıkart)</label>
+                                <span class="help-block">Negatif bir değer girmek için - karakterini giriniz.</span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="hidden_balance_current_balance" value="@Model.ActiveUserBalance.CurrentBalance.ToString("0.00")" />
+
+                        <div class="col-md-6">
+                            <div class="form-group form-md-line-input ">
+                                <input type="text"
+                                    class="form-control"
+                                    name="CurrentBalance"
+                                    id="balance_current_balance"
+                                    value="@Model.ActiveUserBalance.CurrentBalance.ToString("0.00")"
+                                    readonly="readonly" />
+                                <label for="balance_current_balance">Mevcut Bakiye</label>
+                                <span class="help-block"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <textarea
+                            name="Description"
+                            id="balance_description"
+                            class="form-control"
+                            maxlength="500"
+                            rows="5"
+                            required="required"></textarea>
+                        <label for="description">Açıklama</label>
+                        <span class="help-block">Maximum uzunluk: 500 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <textarea
+                            name="ShownDescription"
+                            id="balance_showndescription"
+                            class="form-control"
+                            maxlength="500"
+                            rows="5"></textarea>
+                        <label for="description">Görünen Açıklama</label>
+                        <span class="help-block">Maximum uzunluk: 500 karakter</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">KAYDET</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="send-email-user-balance-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Hesap Bakiyeniz Güncellendi</h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendEmailUserBalanceAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.SendEmailUserBalanceAjaxBegin",
+                OnSuccess = "User.SendEmailUserBalanceAjaxSuccess",
+                OnFailure = "User.SendEmailUserBalanceAjaxFailure"
+            }, new
+            {
+                id = "form-send-email-user-balance"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="ID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendemail_userbalance_fullname"
+                            autocomplete="off"
+                            value="@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendemail_userbalance_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="Email"
+                            id="sendemail_userbalance_email"
+                            autocomplete="off"
+                            value="@Model.User.Email"
+                            required="required"
+                            maxlength="50" />
+                        <label for="sendemail_userbalance_email">Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input form-md-floating-label">
+                        <label class="control-label col-md-2 label-switch">BCC Kullan</label>
+                        <div class="mt-radio-inline">
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="true" checked="checked" />
+                                Evet
+                            <span></span>
+                            </label>
+                            <label class="mt-radio">
+                                <input type="radio" name="UseBCC" value="false" />
+                                Hayır
+                            <span></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-md-line-input " id="div-send-email-userbalance-bcc-email">
+                        <input type="text"
+                            class="form-control"
+                            name="BCCEmail"
+                            id="sendemail_userbalance_bccemail"
+                            autocomplete="off"
+                            required="required"
+                            value="@ContactEmail"
+                            maxlength="50" />
+                        <label for="sendemail_userbalance_bccemail">BCC Email</label>
+                        <span class="help-block">Maksimum 50 karakter</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="send-sms-user-balance-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Hesap Bakiyeniz Güncellendi</h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendSmsUserBalanceAjax", "User",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "User.SendSmsUserBalanceAjaxBegin",
+                OnSuccess = "User.SendSmsUserBalanceAjaxSuccess",
+                OnFailure = "User.SendSmsUserBalanceAjaxFailure"
+            }, new
+            {
+                id = "form-send-sms-user-balance"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="ID" value="@Model.User.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendsms_userbalance_fullname"
+                            autocomplete="off"
+                            value="@string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName)"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendsms_userbalance_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="PhoneNumber"
+                            id="sendsms_userbalance_phonenumber"
+                            autocomplete="off"
+                            value="@Model.User.PhoneNumber"
+                            required="required" />
+                        <label for="sendsms_userbalance_phonenumber">Alıcı Telefon Numarası</label>
+                        <span class="help-block"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

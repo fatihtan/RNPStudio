@@ -1,0 +1,139 @@
+﻿@model UI.Web.Models.Generic.ContactMessageDetailModel
+
+@{
+    string PageTitle = string.Format("BM-{0}", Model.ContactMessage.ID.ToString("0000"));
+    ViewBag.Title = PageTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    System.Globalization.CultureInfo TurkishCultureInfo = new System.Globalization.CultureInfo("tr-TR");
+}
+
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="/">Anasayfa</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <a href="/Generic/ContactMessageList">Mesajlar</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            @if (Model.ContactMessage.IsArchived)
+            {
+                <li>
+                    <a href="/Generic/ContactMessageList?IsArchived=True">Arşivlenmiş Mesajlar</a>
+                    <i class="fa fa-circle"></i>
+                </li>
+            }
+            <li>
+                <span>@PageTitle</span>
+            </li>
+        </ul>
+    </div>
+    <h3 class="page-title"></h3>
+    <div class="row">
+        <div class="col-md-12 ">
+            <div class="portlet light bordered">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="fa fa-envelope font-green"></i>@PageTitle
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-scrollable">
+                                <table class="table table-hover">
+                                    <tbody>
+                                        <tr>
+                                            <th class="col-md-4">Konu</th>
+                                            <td>@Model.ContactMessage.Subject</td>
+                                        </tr>
+
+                                        @if (Model.ContactMessage.UserID.HasValue)
+                                        {
+                                            <tr>
+                                                <th>Ad Soyad</th>
+                                                <td><a href="/User/Detail/@Model.ContactMessage.UserID" 
+                                                    target="_blank">@string.Format("{0} {1}", Model.ContactMessage.FirstName, Model.ContactMessage.LastName)</a></td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <th class="col-md-4">Ad Soyad</th>
+                                                <td>@string.Format("{0} {1}", Model.ContactMessage.FirstName, Model.ContactMessage.LastName)</td>
+                                            </tr>
+                                        }
+
+                                        <tr>
+                                            <th class="col-md-4">Email</th>
+                                            <td><a href="mailto:@Model.ContactMessage.Email">@Model.ContactMessage.Email</a></td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="col-md-4">Telefon Numarası</th>
+                                            <td><a href="tel:@Model.ContactMessage.PhoneNumber">@Model.ContactMessage.PhoneNumber</a></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">Website</td>
+                                            <td>
+                                                @Sky.CMS.Services.WebsiteService.GetWebsiteNameByID(Model.ContactMessage.WebsiteID)
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">Platform</td>
+                                            <td>
+                                                <span class="label label-sm label-success">@Model.ContactMessage.TKPlatform.ToString()</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">Dil</td>
+                                            <td>
+                                                <span class="label label-sm label-info">@Model.ContactMessage.TKLanguage.ToString()</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">IP Adres</td>
+                                            <td>
+                                                @Model.ContactMessage.IPAddress
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">Tarih</td>
+                                            <td>
+                                                @Model.ContactMessage.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss", TurkishCultureInfo)
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td class="bold">Arşiv Statüsü</td>
+                                            <td>
+                                                <span class="label label-sm label-success">@(Model.ContactMessage.IsArchived ? "Arşivlendi" : "Arşivlenmedi")</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="message-content">@Model.ContactMessage.Message</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

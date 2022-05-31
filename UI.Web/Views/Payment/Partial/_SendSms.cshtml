@@ -1,0 +1,167 @@
+﻿@using Sky.Common.DTO
+@using Sky.Mors.DTO
+
+@model UI.Web.Models.Payment.PaymentModel
+
+@{
+    string PaymentID = Model.Payment.ID.ToString("00000");
+}
+
+<table class="table table-hover">
+    <tr>
+        <th>Sms</th>
+        <th>Açıklama</th>
+        <th>Alıcı</th>
+        <th class="col-md-1">&nbsp;</th>
+    </tr>
+    <tr class="bg-color-green">
+        <td>Ödemeniz Kontrol Ediliyor</td>
+        <td>@PaymentID numaralı ödeme kaydınız kontrol ediliyor.</td>
+        <td>Müşteri</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms" 
+                data-tkactor="@((int)TK.TKActor.Customer)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentInProgress)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+    <tr class="bg-color-green">
+        <td>Ödemeniz Onaylandı</td>
+        <td class="font-green">@PaymentID numaralı ödeme kaydınız onaylandı.</td>
+        <td>Müşteri</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms"
+                data-tkactor="@((int)TK.TKActor.Customer)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentConfirmed)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+    <tr class="bg-color-green">
+        <td>Ödemeniz Onaylanamadı</td>
+        <td class="font-red">@PaymentID numaralı ödeme kaydınıza ait gerçekleştirilmiş bir ödeme görüntüleyemedik. Bunun bir hata olduğunu düşünüyorsanız lütfen bizimle iletişime geçiniz.</td>
+        <td>Müşteri</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms" 
+                data-tkactor="@((int)TK.TKActor.Customer)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentNotConfirmed)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+
+    <tr class="bg-color-grey">
+        <td>Ödemeniz Kontrol Ediliyor</td>
+        <td>@PaymentID numaralı ödeme kaydınız kontrol ediliyor.</td>
+        <td>Kullanıcı</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms" 
+                data-tkactor="@((int)TK.TKActor.User)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentInProgress)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+    <tr class="bg-color-grey">
+        <td>Ödemeniz Onaylandı</td>
+        <td class="font-green">@PaymentID numaralı ödeme kaydınız onaylandı.</td>
+        <td>Kullanıcı</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms"
+                data-tkactor="@((int)TK.TKActor.User)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentConfirmed)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+    <tr class="bg-color-grey">
+        <td>Ödemeniz Onaylanamadı</td>
+        <td class="font-red">@PaymentID numaralı ödeme kaydınıza ait gerçekleştirilmiş bir ödeme görüntüleyemedik. Bunun bir hata olduğunu düşünüyorsanız lütfen bizimle iletişime geçiniz.</td>
+        <td>Kullanıcı</td>
+        <td>
+            <a 
+                class="btn btn-sm default text-proper send-payment-sms" 
+                data-tkactor="@((int)TK.TKActor.User)"
+                data-tksmstemplate="@((int)TK.TKSmsTemplate.PaymentNotConfirmed)">
+                <i class="fa fa-envelope"></i> Gönder
+            </a>
+        </td>
+    </tr>
+</table>
+
+
+<div class="modal fade" id="send-payment-sms-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title"></h4>
+            </div>
+
+            @using (Ajax.BeginForm("SendSmsPaymentAjax", "Payment",
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                OnBegin =   "Payment.SendSmsPaymentAjaxBegin",
+                OnSuccess = "Payment.SendSmsPaymentAjaxSuccess",
+                OnFailure = "Payment.SendSmsPaymentAjaxFailure"
+            }, new {
+                id = "form-send-sms-payment"
+            }))
+            {
+                <div class="modal-body">
+
+                    <input type="hidden" name="TKSmsTemplate" id="sendsms_payment_tksmstemplate" />
+                    <input type="hidden" name="PaymentID" id="sendsms_payment_paymentid" value="@Model.Payment.ID" />
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="FullName"
+                            id="sendsms_payment_fullname"
+                            autocomplete="off"
+                            required="required"
+                            maxlength="100" />
+                        <label for="sendsms_payment_fullname">Alıcı Adı Soyadı</label>
+                        <span class="help-block">Maksimum 100 karakter</span>
+                    </div>
+
+                    <div class="form-group form-md-line-input ">
+                        <input type="text"
+                            class="form-control"
+                            name="PhoneNumber"
+                            id="sendsms_payment_phonenumber"
+                            autocomplete="off"
+                            required="required" />
+                        <label for="sendsms_payment_phonenumber">Alıcı Telefon Numarası</label>
+                        <span class="help-block"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">VAZGEÇ</button>
+                    <button type="submit" class="btn green">GÖNDER</button>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+<input type="hidden" class="TKActor_User" value="@((int)TK.TKActor.User)" />
+<input type="hidden" class="TKActor_Customer" value="@((int)TK.TKActor.Customer)" />
+
+<input type="hidden" class="TKActor_UserFullName" value="@(string.Format("{0} {1}", Model.User.FirstName, Model.User.LastName))" />
+<input type="hidden" class="TKActor_CustomerFullName" value="@(string.Format("{0} {1}", Model.Customer.FirstName, Model.Customer.LastName))" />
+
+<input type="hidden" id="TKActor_UserCountryPhoneCode" value="@Model.User.CountryPhoneCode" />
+<input type="hidden" id="TKActor_CustomerPhoneCode" value="@Model.Customer.CountryPhoneCode" />
+
+<input type="hidden" id="TKActor_UserPhoneNumber" value="@Model.User.PhoneNumber" />
+<input type="hidden" id="TKActor_CustomerPhoneNumber" value="@Model.Customer.PhoneNumber" />
